@@ -11,11 +11,11 @@ global_temp <- subset(global_temp, select = c(LandAverageTemperature) )
 str(global_temp)
 temp_ts <-  ts(global_temp, frequency = 12, start = c(1750,1), end =   c(2015,12))
 
-autoplot(temp_ts) 
+#autoplot(temp_ts) 
 
 
-fit <- auto.arima(temp_ts)
-forecast(temp_ts,h=36)
+fit <- auto.arima(temp_ts, D=1)
+forecast(fit,h=360)
 
 #tiff('test.tiff', units="in", width=40, height=10, res=600)
 #plot.ts(temp_ts)  
@@ -26,8 +26,3 @@ forecast(temp_ts,h=36)
 #global_temp <- subset(global_temp, select = c(LandAverageTemperature) )
 # global_temp_ts = ts(global_temp, frequency=12, start=c(1750,1) )
 #plot(global_temp$LandAverageTemperature ~ global_temp$dt, xaxt = "n", type = "l")
-
-
-
-
-
