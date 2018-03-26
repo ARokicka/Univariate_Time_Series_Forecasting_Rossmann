@@ -20,6 +20,7 @@ forecast(fit,h=360)
 #tiff('test.tiff', units="in", width=40, height=10, res=600)
 #plot.ts(temp_ts)  
 #dev.off()
+#test
 
 #global_temp = subset(global_temp, select = c(dt, LandAverageTemperature) )
 #global_temp.ts = ts(global_temp, frequency=12, start=c(1750,1) )
