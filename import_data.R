@@ -12,6 +12,7 @@ train_2m = read.csv("D:/Praca/Analityka retail/rossmann/train_2m.csv")
 prepare_data(test_2m)
 prepare_data(train_2m)
 
+
 test_ts <- zoo(test_aggregated$Sales, order.by=as.Date(as.character(test_aggregated$Date), format='%Y-%m-%d'))
 test_ts <- ts(test_ts, start=c(2015,07,23), frequency=7)
 
