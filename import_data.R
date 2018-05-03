@@ -108,11 +108,10 @@ rossmann.ts.diff <- diff(rossmann.ts)
 rossmann.ts.diff7 <- diff(rossmann.ts, lag = 7)
 tsdisplay(rossmann.ts.diff7)
 
+
 # zastąpienie outlayerów i wyczyszczenie brakujacych danych
 tsoutliers(rossmann.ts)
 xyplot(rossmann.ts, aspect = 1/5)
 xyplot(tsclean(rossmann.ts), aspect = 1/5)
-
-
-
-
+rossmann.ts.train.clean <- tsclean(rossmann.ts.train)
+#rossmann.ts.test <- tsclean(rossmann.ts.test)
