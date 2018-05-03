@@ -6,6 +6,7 @@ library (ggplot2)
 library(zoo)
 library(sweep)
 library(lattice)
+library(expsmooth)
 
 #wczytywanie danych z pliku CSV
 rossmann.csv = read.csv("D:/OneDrive/Studia WNE/praca dyplomowa/dane/rossmann/rossmann.csv")
@@ -52,8 +53,6 @@ start_day_no <-  as.numeric(format(data_sequence[1], "%j"))
 #tworzę szereg TS
 #rossmann.ts <- ts(rossmann$Sales, start = c(2013, start_day_no), frequency = 365.25)
 rossmann.ts <- ts(rossmann$Sales, start = 1, frequency = 7)
-summary(rossmann.ts)
-tail(rossmann.ts, n=30)
 
 #podział na dane testowe i uczące
 rossmann.ts.train <- window(rossmann.ts, end =   c(131,2) )
@@ -71,3 +70,40 @@ lines(fitted(rossmann.ts.fore), col='red')
 #narysuj cały zbiór danych podzielony na 5 wykresów, nakłada się 10% zawartości
 xyplot(rossmann.ts, aspect = 1/5)
 xyplot(rossmann.ts,  strip = TRUE, cut = list(number = 5, overlap = 0.1))
+
+#sezonoWość tygodniowa i trend - brak trendu długoterminowego
+par(mfrow=c(2,1))
+monthplot(rossmann.ts)
+boxplot(rossmann.ts ~ cycle(rossmann.ts))
+#seasonplot(rossmann.ts, col = rainbow(12) )
+
+#wykresy rozrzutu dla wartości opóźionych - autokorelacja
+lag.plot(rossmann.ts, lags = 4, do.lines = FALSE)
+
+#wykresy rozrzutu dla reszt
+rossmann.ts.reszty <- decompose(rossmann.ts)$random
+head(rossmann.ts.reszty)
+tail(rossmann.ts.reszty)
+rossmann.ts.reszty <- na.omit(rossmann.ts.reszty)
+
+#ACF i PACF - autokorelacja
+par(mfrow=c(2,1))
+Acf(rossmann.ts, lag.max = 16)
+Pacf(rossmann.ts, lag.max = 16)
+tsdisplay(rossmann.ts)
+
+#Transofmracja Boxa-Cox (za dużo nie daje, bo wariancja jest stała)
+rossmann.ts.boxcox.sqrt <- BoxCox(rossmann.ts, lambda = 0.5)
+rossmann.ts.boxcox.log <- BoxCox(rossmann.ts, lambda = 1)
+par(mfrow=c(3,1))
+plot(rossmann.ts, main="rossmann.ts")
+grid()
+plot(rossmann.ts.boxcox.sqrt, main="rossmann.ts.boxcox.sqrt")
+grid()
+plot(rossmann.ts.boxcox.log, main="rossmann.ts.boxcox.log")
+grid()
+
+# różnicowanie z opóźnieniem 1 i 7
+rossmann.ts.diff <- diff(rossmann.ts)
+rossmann.ts.diff7 <- diff(rossmann.ts, lag = 7)
+tsdisplay(rossmann.ts.diff7)
