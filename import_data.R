@@ -63,6 +63,7 @@ rossmann.ts.fit <- auto.arima(rossmann.ts.train)
 # prognozuj dane na kolejne 30 dni
 rossmann.ts.fore <- forecast(rossmann.ts.test, h = 30)
 
+
 #narysuj prognozę
 plot(rossmann.ts.test)
 lines(fitted(rossmann.ts.fore), col='red')
