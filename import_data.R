@@ -5,6 +5,7 @@ library(ggfortify)
 library (ggplot2)
 library(zoo)
 library(sweep)
+library(lattice)
 
 #wczytywanie danych z pliku CSV
 rossmann.csv = read.csv("D:/OneDrive/Studia WNE/praca dyplomowa/dane/rossmann/rossmann.csv")
@@ -67,3 +68,6 @@ rossmann.ts.fore <- forecast(rossmann.ts.test, h = 30)
 plot(rossmann.ts.test)
 lines(fitted(rossmann.ts.fore), col='red')
 
+#narysuj cały zbiór danych podzielony na 5 wykresów, nakłada się 10% zawartości
+xyplot(rossmann.ts, aspect = 1/5)
+xyplot(rossmann.ts,  strip = TRUE, cut = list(number = 5, overlap = 0.1))
