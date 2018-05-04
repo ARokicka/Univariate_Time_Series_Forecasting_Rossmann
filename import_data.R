@@ -155,3 +155,32 @@ legend("topleft", legend = c("oryginalny szereg", "szereg odsezonowany"),
 xyplot(cbind(rossmann.ts, rossmann.ts.odsezonowane), main = "Dane oryginalne i odsezonowane",  
        strip = TRUE, cut = list(number = 5, overlap = 0.1), superpose = TRUE)
 
+####
+#### Budowa modelu AR i MA
+####
+
+# różnicowanie z opóźnieniem 14 i 1 => najlepsze efekty
+tsdisplay(rossmann.ts)
+
+rossmann.ts.diff_1 <- diff(rossmann.ts)
+tsdisplay(rossmann.ts.diff_1)
+
+rossmann.ts.diff_14 <- diff(rossmann.ts, lag = 14)
+tsdisplay(rossmann.ts.diff_7)
+
+rossmann.ts.diff_14_1 <- diff(rossmann.ts.diff_14, lag = 1)
+tsdisplay(rossmann.ts.diff_14_1)
+# jak widać najlepiej jest różnicować najpierw dla s=14, a pozniej s=1
+# wtedy pozbywamy sie sezonowosci
+
+# a teraz test odwrotnego roznicowania => wszystko OK
+rossmann.ts.diff_14_inv <- diffinv(rossmann.ts.diff_14_1, lag = 1, xi = head(rossmann.ts.diff_14, n = 1) )
+tsdisplay(rossmann.ts.diff_14_inv)
+rossmann.ts.diff_inv <- diffinv(rossmann.ts.diff_14_inv, lag = 14, xi = head(rossmann.ts, n = 14) )
+tsdisplay(rossmann.ts.diff_inv)
+
+
+
+
+
+
