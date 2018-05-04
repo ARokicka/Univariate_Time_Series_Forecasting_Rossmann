@@ -14,7 +14,6 @@ rossmann.csv = read.csv("D:/OneDrive/Studia WNE/praca dyplomowa/dane/rossmann/ro
 #sortowanie
 rossmann <- rossmann.csv[order(rossmann.csv$Date),]
 
-
 #święta kodowane jako 0-jest; 1-nie ma
 rossmann$StateHoliday <- gsub("a", "1", rossmann$StateHoliday)
 rossmann$StateHoliday <- gsub("b", "1", rossmann$StateHoliday)
@@ -143,4 +142,16 @@ tsdisplay(rossmann.ts.dekomp.multi$random)
 # wychodzimy poza przedział ufności -> reszty nie przypominaj abialego szumu, za duzo
 # wartosci poza przedzialem ufnosci
 # widac tez sezonowosc
+
+# odsezonowanie danych
+rossmann.ts.odsezonowane <- seasadj(rossmann.ts.dekomp.multi)
+plot(rossmann.ts, col = "black", main = "Dane oryginalne i odsezonowane")
+lines(rossmann.ts.odsezonowane, col = "red", lty = 2)
+legend("topleft", legend = c("oryginalny szereg", "szereg odsezonowany"), 
+       col = c("black", "green"))
+#xyplot(rossmann.ts, main = "Dane oryginalne",  strip = TRUE, cut = list(number = 5, overlap = 0.1))
+#xyplot(rossmann.ts.odsezonowane, main = "Dane odsezonowane",  
+#      strip = TRUE, cut = list(number = 5, overlap = 0.1))
+xyplot(cbind(rossmann.ts, rossmann.ts.odsezonowane), main = "Dane oryginalne i odsezonowane",  
+       strip = TRUE, cut = list(number = 5, overlap = 0.1), superpose = TRUE)
 
