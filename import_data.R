@@ -188,6 +188,7 @@ print(ar.model.aic)
 #     2. ARIMA(0,1,27)(0,1,0)
 #     3. auto.arima
 
+
 ARIMA.model1 <- Arima(rossmann.ts.train, order = c(29,1,0), seasonal = list(order = c(0,1,0), period = 14))
 predicted = predict(ARIMA.model1, n.ahead = 30)
 ARIMA.model2 <- Arima(rossmann.ts.train, order = c(0,1,27), seasonal = list(order = c(0,1,0), period = 14))
