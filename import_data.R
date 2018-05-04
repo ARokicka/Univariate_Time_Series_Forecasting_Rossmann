@@ -116,3 +116,31 @@ xyplot(rossmann.ts, aspect = 1/5)
 xyplot(tsclean(rossmann.ts), aspect = 1/5)
 rossmann.ts.train.clean <- tsclean(rossmann.ts.train)
 #rossmann.ts.test <- tsclean(rossmann.ts.test)
+
+# średnia ruchoma q=5
+par(mfrow=c(2,1))
+rossmann.ts.ma5 <- filter(rossmann.ts, sides = 2, filter = rep(1 / 11, 11 ))
+rossmann.ts.ma5 <- na.omit(rossmann.ts.ma5)
+plot(rossmann.ts.ma5)
+
+# średnia ruchoma q=10
+rossmann.ts.ma10 <- filter(rossmann.ts, sides = 2, filter = rep(1 / 21, 21 ))
+rossmann.ts.ma10 <- na.omit(rossmann.ts.ma10)
+plot(rossmann.ts.ma10)
+
+#dekompozycja addytywna
+rossmann.ts.dekomp.add <- decompose(rossmann.ts, type = "additive")
+plot(rossmann.ts.dekomp.add)
+tsdisplay(rossmann.ts.dekomp.add$random)
+# wychodzimy poza przedział ufności -> reszty nie przypominaj abialego szumu, za duzo
+# wartosci poza przedzialem ufnosci
+# widac tez sezonowosc
+
+#dekompozycja multiplikatywna
+rossmann.ts.dekomp.multi <- decompose(rossmann.ts, type = "multiplicative")
+plot(rossmann.ts.dekomp.multi)
+tsdisplay(rossmann.ts.dekomp.multi$random)
+# wychodzimy poza przedział ufności -> reszty nie przypominaj abialego szumu, za duzo
+# wartosci poza przedzialem ufnosci
+# widac tez sezonowosc
+
