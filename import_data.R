@@ -82,8 +82,6 @@ lag.plot(rossmann.ts, lags = 4, do.lines = FALSE)
 
 #wykresy rozrzutu dla reszt
 rossmann.ts.reszty <- decompose(rossmann.ts)$random
-head(rossmann.ts.reszty)
-tail(rossmann.ts.reszty)
 rossmann.ts.reszty <- na.omit(rossmann.ts.reszty)
 
 #ACF i PACF - autokorelacja
@@ -160,27 +158,49 @@ xyplot(cbind(rossmann.ts, rossmann.ts.odsezonowane), main = "Dane oryginalne i o
 ####
 
 # różnicowanie z opóźnieniem 14 i 1 => najlepsze efekty
-tsdisplay(rossmann.ts)
-
-rossmann.ts.diff_1 <- diff(rossmann.ts)
-tsdisplay(rossmann.ts.diff_1)
-
-rossmann.ts.diff_14 <- diff(rossmann.ts, lag = 14)
-tsdisplay(rossmann.ts.diff_7)
-
-rossmann.ts.diff_14_1 <- diff(rossmann.ts.diff_14, lag = 1)
-tsdisplay(rossmann.ts.diff_14_1)
+rossmann.ts.diff7 <- diff(rossmann.ts, lag = 7)
+tsdisplay(rossmann.ts.diff14)
+rossmann.ts.diff7.diff1 <- diff(rossmann.ts.diff7, lag = 1)
+tsdisplay(rossmann.ts.diff7.diff1)
 # jak widać najlepiej jest różnicować najpierw dla s=14, a pozniej s=1
 # wtedy pozbywamy sie sezonowosci
+# do tego wychodzi, że powinien najlepszy być model:
+# AR(p=28) - chociaz trudno to stwierdzić
+# MA(q=30) - chociaz trudno to stwierdzić
 
 # a teraz test odwrotnego roznicowania => wszystko OK
-rossmann.ts.diff_14_inv <- diffinv(rossmann.ts.diff_14_1, lag = 1, xi = head(rossmann.ts.diff_14, n = 1) )
-tsdisplay(rossmann.ts.diff_14_inv)
-rossmann.ts.diff_inv <- diffinv(rossmann.ts.diff_14_inv, lag = 14, xi = head(rossmann.ts, n = 14) )
-tsdisplay(rossmann.ts.diff_inv)
+#rossmann.ts.diff_14_inv <- diffinv(rossmann.ts.diff_14_1, lag = 1, xi = head(rossmann.ts.diff_14, n = 1) )
+#tsdisplay(rossmann.ts.diff_14_inv)
+#rossmann.ts.diff_inv <- diffinv(rossmann.ts.diff_14_inv, lag = 7, xi = head(rossmann.ts, n = 14) )
+#tsdisplay(rossmann.ts.diff_inv)
 
+# test AR(p=13)
+p = 30
+ar.model.yw = ar(rossmann.ts.diff14.diff1, order.max = p, aic = FALSE)
+print(ar.model.yw)
+ar.model.mle = ar(rossmann.ts.diff14.diff1, order.max = p, aic = FALSE, method = "mle")
+print(ar.model.mle)
+ar.model.aic = ar(rossmann.ts.diff14.diff1, aic = TRUE)
+print(ar.model.aic)
 
+# teoretycznie mam teraz dwa modele ARIMA:
+#     1. ARIMA(29,1,0)(0,1,0)
+#     2. ARIMA(0,1,27)(0,1,0)
+#     3. auto.arima
 
-
+ARIMA.model1 <- Arima(rossmann.ts.train, order = c(29,1,0), seasonal = list(order = c(0,1,0), period = 14))
+predicted = predict(ARIMA.model1, n.ahead = 30)
+ARIMA.model2 <- Arima(rossmann.ts.train, order = c(0,1,27), seasonal = list(order = c(0,1,0), period = 14))
+predicted2 = predict(ARIMA.model2, n.ahead = 30)
+rossmann.ts.fit <- auto.arima(rossmann.ts.train)
+predicted3 = predict(rossmann.ts.fit, n.ahead = 30)
+plot(rossmann.ts.test )
+lines(predicted$pred, col='red')
+lines(predicted2$pred, col='blue')
+lines(predicted3$pred, col='green')
+grid()
+legend("bottomright", legend = c("Oryginalny szereg", "model ARIMA(29,1,0)", 
+                                 "model ARIMA(0,1,27)", "model auto.arima"),
+       col = c("black", "red", "blue", "green"), lty=c(1,1,1,1))
 
 
