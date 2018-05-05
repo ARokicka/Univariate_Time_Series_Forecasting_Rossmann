@@ -1,7 +1,7 @@
 library(forecast)
 library(xts)
 library(tseries)
-library(ggfortify) 
+library(ggfortify)
 library (ggplot2)
 library(zoo)
 library(sweep)
@@ -10,13 +10,13 @@ library(expsmooth)
 library(caret)
 library(gridExtra)
 library(grid)
-library(data.table)    
+library(data.table)
 
 #wczytywanie danych z pliku CSV
 rossmann.csv = read.csv("D:/OneDrive/Studia WNE/praca dyplomowa/dane/rossmann/rossmann.csv")
 
 #sortowanie
-rossmann <- rossmann.csv[order(rossmann.csv$Date),]
+rossmann <- rossmann.csv[order(rossmann.csv$Date), ]
 
 #święta kodowane jako 0-jest; 1-nie ma
 rossmann$StateHoliday <- gsub("a", "1", rossmann$StateHoliday)
@@ -24,33 +24,42 @@ rossmann$StateHoliday <- gsub("b", "1", rossmann$StateHoliday)
 rossmann$StateHoliday <- gsub("c", "1", rossmann$StateHoliday)
 
 #przekształcenie zmiennych z factor na numeric
-for(i in 4:9){
-  rossmann[,i] <-  as.numeric(as.character( rossmann[, i] ))
+for (i in 4:9) {
+  rossmann[, i] <-  as.numeric(as.character(rossmann[, i]))
 }
 
 #stworzenie zbioru unikalnych dni tygodnia dla dat
 rossmann_dayOfWeek <- cbind(rossmann)
-rossmann_dayOfWeek[,4:9] <- NULL
-rossmann_dayOfWeek[,1] <- NULL
-rossmann_dayOfWeek <- rossmann_dayOfWeek[!duplicated(rossmann_dayOfWeek$Date),]
-rossmann_dayOfWeek <- rossmann_dayOfWeek[order(rossmann_dayOfWeek$Date),]
+rossmann_dayOfWeek[, 4:9] <- NULL
+rossmann_dayOfWeek[, 1] <- NULL
+rossmann_dayOfWeek <-
+  rossmann_dayOfWeek[!duplicated(rossmann_dayOfWeek$Date), ]
+rossmann_dayOfWeek <-
+  rossmann_dayOfWeek[order(rossmann_dayOfWeek$Date), ]
 
 #usuniecie niepotrzebnych zmiennych
 rossmann$DayOfWeek <- NULL
 rossmann$Store <- NULL
 
 #agreguje dane po dacie
-rossmann <- aggregate.data.frame(rossmann[, 2:7], by=list(Date = rossmann$Date), FUN=sum, drop = TRUE)
+rossmann <-
+  aggregate.data.frame(
+    rossmann[, 2:7],
+    by = list(Date = rossmann$Date),
+    FUN = sum,
+    drop = TRUE
+  )
 
 #dostajemy dane z informacją o dniu tygodnia
-rossmann <- merge(rossmann, rossmann_dayOfWeek, by= "Date" )
+rossmann <- merge(rossmann, rossmann_dayOfWeek, by = "Date")
 
 #tworze kolumne z id i ustawiam ja jako pierwsza
 rossmann$Id <- seq.int(nrow(rossmann))
-rossmann <- rossmann[,c(ncol(rossmann),1:(ncol(data_set)-1))]
+rossmann <- rossmann[, c(ncol(rossmann), 1:(ncol(data_set) - 1))]
 
 #generuję ciąg dat, dzięki niemu wiem, jaki jest dzień roku
-data_sequence <- seq(as.Date("2013-01-01"), as.Date("2015-07-31"), by = "day")
+data_sequence <-
+  seq(as.Date("2013-01-01"), as.Date("2015-07-31"), by = "day")
 start_day_no <-  as.numeric(format(data_sequence[1], "%j"))
 
 #tworzę szereg TS
@@ -58,8 +67,8 @@ start_day_no <-  as.numeric(format(data_sequence[1], "%j"))
 rossmann.ts <- ts(rossmann$Sales, start = 1, frequency = 7)
 
 #podział na dane testowe i uczące
-rossmann.ts.train <- window(rossmann.ts, end =   c(131,2) )
-rossmann.ts.test  <- window(rossmann.ts, start = c(131,3) )
+rossmann.ts.train <- window(rossmann.ts, end =   c(131, 2))
+rossmann.ts.test  <- window(rossmann.ts, start = c(131, 3))
 
 #dobierz mi model do danych uczących
 rossmann.ts.fit <- auto.arima(rossmann.ts.train)
@@ -69,14 +78,16 @@ rossmann.ts.fore <- forecast(rossmann.ts.test, h = 30)
 
 #narysuj prognozę
 plot(rossmann.ts.test)
-lines(fitted(rossmann.ts.fore), col='red')
+lines(fitted(rossmann.ts.fore), col = 'red')
 
 #narysuj cały zbiór danych podzielony na 5 wykresów, nakłada się 10% zawartości
-xyplot(rossmann.ts, aspect = 1/5)
-xyplot(rossmann.ts,  strip = TRUE, cut = list(number = 5, overlap = 0.1))
+xyplot(rossmann.ts, aspect = 1 / 5)
+xyplot(rossmann.ts,
+       strip = TRUE,
+       cut = list(number = 5, overlap = 0.1))
 
 #sezonoWość tygodniowa i trend - brak trendu długoterminowego
-par(mfrow=c(2,1))
+par(mfrow = c(2, 1))
 monthplot(rossmann.ts)
 boxplot(rossmann.ts ~ cycle(rossmann.ts))
 #seasonplot(rossmann.ts, col = rainbow(12) )
@@ -89,7 +100,7 @@ rossmann.ts.reszty <- decompose(rossmann.ts)$random
 rossmann.ts.reszty <- na.omit(rossmann.ts.reszty)
 
 #ACF i PACF - autokorelacja
-par(mfrow=c(2,1))
+par(mfrow = c(2, 1))
 Acf(rossmann.ts, lag.max = 16)
 Pacf(rossmann.ts, lag.max = 16)
 tsdisplay(rossmann.ts)
@@ -97,12 +108,12 @@ tsdisplay(rossmann.ts)
 #Transofmracja Boxa-Cox (za dużo nie daje, bo wariancja jest stała)
 rossmann.ts.boxcox.sqrt <- BoxCox(rossmann.ts, lambda = 0.5)
 rossmann.ts.boxcox.log <- BoxCox(rossmann.ts, lambda = 1)
-par(mfrow=c(3,1))
-plot(rossmann.ts, main="rossmann.ts")
+par(mfrow = c(3, 1))
+plot(rossmann.ts, main = "rossmann.ts")
 grid()
-plot(rossmann.ts.boxcox.sqrt, main="rossmann.ts.boxcox.sqrt")
+plot(rossmann.ts.boxcox.sqrt, main = "rossmann.ts.boxcox.sqrt")
 grid()
-plot(rossmann.ts.boxcox.log, main="rossmann.ts.boxcox.log")
+plot(rossmann.ts.boxcox.log, main = "rossmann.ts.boxcox.log")
 grid()
 
 # różnicowanie z opóźnieniem 1 i 7
@@ -113,19 +124,21 @@ tsdisplay(rossmann.ts.diff7)
 
 # zastąpienie outlayerów i wyczyszczenie brakujacych danych
 tsoutliers(rossmann.ts)
-xyplot(rossmann.ts, aspect = 1/5)
-xyplot(tsclean(rossmann.ts), aspect = 1/5)
+xyplot(rossmann.ts, aspect = 1 / 5)
+xyplot(tsclean(rossmann.ts), aspect = 1 / 5)
 rossmann.ts.train.clean <- tsclean(rossmann.ts.train)
 #rossmann.ts.test <- tsclean(rossmann.ts.test)
 
 # średnia ruchoma q=5
-par(mfrow=c(2,1))
-rossmann.ts.ma5 <- filter(rossmann.ts, sides = 2, filter = rep(1 / 11, 11 ))
+par(mfrow = c(2, 1))
+rossmann.ts.ma5 <-
+  filter(rossmann.ts, sides = 2, filter = rep(1 / 11, 11))
 rossmann.ts.ma5 <- na.omit(rossmann.ts.ma5)
 plot(rossmann.ts.ma5)
 
 # średnia ruchoma q=10
-rossmann.ts.ma10 <- filter(rossmann.ts, sides = 2, filter = rep(1 / 21, 21 ))
+rossmann.ts.ma10 <-
+  filter(rossmann.ts, sides = 2, filter = rep(1 / 21, 21))
 rossmann.ts.ma10 <- na.omit(rossmann.ts.ma10)
 plot(rossmann.ts.ma10)
 
@@ -138,7 +151,8 @@ tsdisplay(rossmann.ts.dekomp.add$random)
 # widac tez sezonowosc
 
 #dekompozycja multiplikatywna
-rossmann.ts.dekomp.multi <- decompose(rossmann.ts, type = "multiplicative")
+rossmann.ts.dekomp.multi <-
+  decompose(rossmann.ts, type = "multiplicative")
 plot(rossmann.ts.dekomp.multi)
 tsdisplay(rossmann.ts.dekomp.multi$random)
 # wychodzimy poza przedział ufności -> reszty nie przypominaj abialego szumu, za duzo
@@ -149,13 +163,21 @@ tsdisplay(rossmann.ts.dekomp.multi$random)
 rossmann.ts.odsezonowane <- seasadj(rossmann.ts.dekomp.multi)
 plot(rossmann.ts, col = "black", main = "Dane oryginalne i odsezonowane")
 lines(rossmann.ts.odsezonowane, col = "red", lty = 2)
-legend("topleft", legend = c("oryginalny szereg", "szereg odsezonowany"), 
-       col = c("black", "green"))
+legend(
+  "topleft",
+  legend = c("oryginalny szereg", "szereg odsezonowany"),
+  col = c("black", "green")
+)
 #xyplot(rossmann.ts, main = "Dane oryginalne",  strip = TRUE, cut = list(number = 5, overlap = 0.1))
-#xyplot(rossmann.ts.odsezonowane, main = "Dane odsezonowane",  
+#xyplot(rossmann.ts.odsezonowane, main = "Dane odsezonowane",
 #      strip = TRUE, cut = list(number = 5, overlap = 0.1))
-xyplot(cbind(rossmann.ts, rossmann.ts.odsezonowane), main = "Dane oryginalne i odsezonowane",  
-       strip = TRUE, cut = list(number = 5, overlap = 0.1), superpose = TRUE)
+xyplot(
+  cbind(rossmann.ts, rossmann.ts.odsezonowane),
+  main = "Dane oryginalne i odsezonowane",
+  strip = TRUE,
+  cut = list(number = 5, overlap = 0.1),
+  superpose = TRUE
+)
 
 ####
 #### Budowa modelu AR i MA
@@ -180,9 +202,16 @@ tsdisplay(rossmann.ts.diff7.diff1)
 
 # test AR(p=13)
 p = 30
-ar.model.yw = ar(rossmann.ts.diff14.diff1, order.max = p, aic = FALSE)
+ar.model.yw = ar(rossmann.ts.diff14.diff1,
+                 order.max = p,
+                 aic = FALSE)
 print(ar.model.yw)
-ar.model.mle = ar(rossmann.ts.diff14.diff1, order.max = p, aic = FALSE, method = "mle")
+ar.model.mle = ar(
+  rossmann.ts.diff14.diff1,
+  order.max = p,
+  aic = FALSE,
+  method = "mle"
+)
 print(ar.model.mle)
 ar.model.aic = ar(rossmann.ts.diff14.diff1, aic = TRUE)
 print(ar.model.aic)
@@ -192,30 +221,45 @@ print(ar.model.aic)
 #     2. ARIMA(0,1,27)(0,1,0)
 #     3. auto.arima
 
-ARIMA.model1 <- Arima(rossmann.ts.train, order = c(29,1,0), seasonal = list(order = c(0,1,0), period = 14))
+ARIMA.model1 <-
+  Arima(
+    rossmann.ts.train,
+    order = c(29, 1, 0),
+    seasonal = list(order = c(0, 1, 0), period = 14)
+  )
 ARIMA.model1.pred = predict(ARIMA.model1, n.ahead = 30)
-ARIMA.model2 <- Arima(rossmann.ts.train, order = c(0,1,27), seasonal = list(order = c(0,1,0), period = 14))
+ARIMA.model2 <-
+  Arima(
+    rossmann.ts.train,
+    order = c(0, 1, 27),
+    seasonal = list(order = c(0, 1, 0), period = 14)
+  )
 ARIMA.model2.pred = predict(ARIMA.model2, n.ahead = 30)
 ARIMA.model3 <- auto.arima(rossmann.ts.train)
 ARIMA.model3.pred = predict(ARIMA.model3, n.ahead = 30)
-ARIMA.model4 <- Arima(rossmann.ts.train, order = c(8,1,8), seasonal = list(order = c(0,1,1), period = 14))
+ARIMA.model4 <-
+  Arima(
+    rossmann.ts.train,
+    order = c(8, 1, 8),
+    seasonal = list(order = c(0, 1, 1), period = 14)
+  )
 ARIMA.model4.pred = predict(ARIMA.model4, n.ahead = 30)
 tsdisplay(ARIMA.model4$residuals)
 
 # wykresy reszt
 # nie widac na nich trendów i sezonowości
 # ale w resztach widac pewne niewyjaśnione zalezności
-plot(ARIMA.model1$residuals, main="Reszty dla modelu ARIMA(29,1,0)(0,1,0)")
-Acf(ARIMA.model1$residuals, main="ACF: Reszty dla modelu ARIMA(29,1,0)(0,1,0)")
+plot(ARIMA.model1$residuals, main = "Reszty dla modelu ARIMA(29,1,0)(0,1,0)")
+Acf(ARIMA.model1$residuals, main = "ACF: Reszty dla modelu ARIMA(29,1,0)(0,1,0)")
 
-plot(ARIMA.model2$residuals, main="Reszty dla modelu ARIMA(0,1,27)(0,1,0)")
-Acf(ARIMA.model2$residuals, main="ACF: Reszty dla modelu ARIMA(0,1,27)(0,1,0)")
+plot(ARIMA.model2$residuals, main = "Reszty dla modelu ARIMA(0,1,27)(0,1,0)")
+Acf(ARIMA.model2$residuals, main = "ACF: Reszty dla modelu ARIMA(0,1,27)(0,1,0)")
 
-plot(ARIMA.model3$residuals, main="Reszty dla modelu auto.arima")
-Acf(ARIMA.model3$residuals, main="ACF: Reszty dla modelu auto.arima")
+plot(ARIMA.model3$residuals, main = "Reszty dla modelu auto.arima")
+Acf(ARIMA.model3$residuals, main = "ACF: Reszty dla modelu auto.arima")
 
-plot(ARIMA.model4$residuals, main="Reszty dla modelu ARIMA(8,1,8)(0,1,1)")
-Acf(ARIMA.model4$residuals, main="ACF: Reszty dla modelu ARIMA(8,1,8)(0,1,1)")
+plot(ARIMA.model4$residuals, main = "Reszty dla modelu ARIMA(8,1,8)(0,1,1)")
+Acf(ARIMA.model4$residuals, main = "ACF: Reszty dla modelu ARIMA(8,1,8)(0,1,1)")
 
 # nie mamy podstaw do odrzucenia hipotezy zerowej, że reszty to biały szum: ARIMA(29,1,0)(0,1,0)
 Box.test(ARIMA.model1$residuals, lag = 1, type = "Ljung-Box")
@@ -247,60 +291,150 @@ Box.test(ARIMA.model4$residuals, lag = 28, type = "Ljung-Box")
 tsdiag(ARIMA.model4, gof.lag = 28)
 
 # narysuj wykresy przwidywanych funkcji
-plot(rossmann.ts.test, lwd=3)
-lines(ARIMA.model1.pred$pred, col='red')
-lines(ARIMA.model2.pred$pred, col='blue')
-lines(ARIMA.model3.pred$pred, col='green')
-lines(ARIMA.model4.pred$pred, col='magenta')
+plot(rossmann.ts.test, lwd = 3)
+lines(ARIMA.model1.pred$pred, col = 'red')
+lines(ARIMA.model2.pred$pred, col = 'blue')
+lines(ARIMA.model3.pred$pred, col = 'green')
+lines(ARIMA.model4.pred$pred, col = 'magenta')
 grid()
-legend("bottomright", legend = c("Oryginalny szereg", "model ARIMA(29,1,0)", 
-                                 "model ARIMA(0,1,27)", "model auto.arima", "model ARIMA(8,1,8)"),
-       col = c("black", "red", "blue", "green"), lty=c(1,1,1,1))
+legend(
+  "bottomright",
+  legend = c(
+    "Oryginalny szereg",
+    "model ARIMA(29,1,0)",
+    "model ARIMA(0,1,27)",
+    "model auto.arima",
+    "model ARIMA(8,1,8)"
+  ),
+  col = c("black", "red", "blue", "green"),
+  lty = c(1, 1, 1, 1)
+)
 
 # narysuj wykresy modułów błędów
-plot(abs(rossmann.ts.test - ARIMA.model1.pred$pred) , col='red', lwd=2)
-lines( abs(rossmann.ts.test - ARIMA.model2.pred$pred), col='blue', lwd=2)
-lines( abs(rossmann.ts.test - ARIMA.model3.pred$pred), col='green', lwd=2)
-lines( abs(rossmann.ts.test - ARIMA.model4.pred$pred), col='magenta', lwd=2)
+plot(abs(rossmann.ts.test - ARIMA.model1.pred$pred) ,
+     col = 'red',
+     lwd = 2)
+lines(abs(rossmann.ts.test - ARIMA.model2.pred$pred),
+      col = 'blue',
+      lwd = 2)
+lines(abs(rossmann.ts.test - ARIMA.model3.pred$pred),
+      col = 'green',
+      lwd = 2)
+lines(abs(rossmann.ts.test - ARIMA.model4.pred$pred),
+      col = 'magenta',
+      lwd = 2)
 grid()
-legend("topright", legend = c("model ARIMA(29,1,0)", 
-                                 "model ARIMA(0,1,27)", "model auto.arima", "model ARIMA(8,1,8)"),
-       col = c("black", "red", "blue", "green", "magenta"), lty=c(1,1,1,1))
+legend(
+  "topright",
+  legend = c(
+    "model ARIMA(29,1,0)",
+    "model ARIMA(0,1,27)",
+    "model auto.arima",
+    "model ARIMA(8,1,8)"
+  ),
+  col = c("black", "red", "blue", "green", "magenta"),
+  lty = c(1, 1, 1, 1)
+)
 
 # policz RMSE i Rsquared
-ARIMA.model1.postResample <- postResample(pred = ARIMA.model1.pred$pred, obs = rossmann.ts.test)
-ARIMA.model2.postResample <- postResample(pred = ARIMA.model2.pred$pred, obs = rossmann.ts.test)
-ARIMA.model3.postResample <- postResample(pred = ARIMA.model3.pred$pred, obs = rossmann.ts.test)
-ARIMA.model4.postResample <- postResample(pred = ARIMA.model4.pred$pred, obs = rossmann.ts.test)
+ARIMA.model1.postResample <-
+  postResample(pred = ARIMA.model1.pred$pred, obs = rossmann.ts.test)
+ARIMA.model2.postResample <-
+  postResample(pred = ARIMA.model2.pred$pred, obs = rossmann.ts.test)
+ARIMA.model3.postResample <-
+  postResample(pred = ARIMA.model3.pred$pred, obs = rossmann.ts.test)
+ARIMA.model4.postResample <-
+  postResample(pred = ARIMA.model4.pred$pred, obs = rossmann.ts.test)
 
 # diagram porównujący RMSE różnych modeli
 colours <- c("red", "blue", "green", "magenta")
-ARIMA.compare.RMSE <- c(ARIMA.model1.postResample[1], ARIMA.model2.postResample[1], 
-                        ARIMA.model3.postResample[1], ARIMA.model4.postResample[1])
-barplot(ARIMA.compare.RMSE, col=colours, main="RMSE")
-legend("topleft", c("model ARIMA(29,1,0)", 
-                    "model ARIMA(0,1,27)", "model auto.arima", "model ARIMA(8,1,8)"), cex=1.3, bty="n", fill=colours)
+ARIMA.compare.RMSE <-
+  c(
+    ARIMA.model1.postResample[1],
+    ARIMA.model2.postResample[1],
+    ARIMA.model3.postResample[1],
+    ARIMA.model4.postResample[1]
+  )
+barplot(ARIMA.compare.RMSE, col = colours, main = "RMSE")
+legend(
+  "topleft",
+  c(
+    "model ARIMA(29,1,0)",
+    "model ARIMA(0,1,27)",
+    "model auto.arima",
+    "model ARIMA(8,1,8)"
+  ),
+  cex = 1.3,
+  bty = "n",
+  fill = colours
+)
 
 # diagram porównujący Rsquared różnych modeli
-ARIMA.compare.Rsquare <- c(ARIMA.model1.postResample[2], ARIMA.model2.postResample[2], 
-                           ARIMA.model3.postResample[2], ARIMA.model4.postResample[2])
-barplot(ARIMA.compare.Rsquare, col=colours, main="Rsquared")
-legend("topleft", c("model ARIMA(29,1,0)", 
-                    "model ARIMA(0,1,27)", "model auto.arima","model ARIMA(8,1,8)"), cex=1.3, bty="n", fill=colours)
+ARIMA.compare.Rsquare <-
+  c(
+    ARIMA.model1.postResample[2],
+    ARIMA.model2.postResample[2],
+    ARIMA.model3.postResample[2],
+    ARIMA.model4.postResample[2]
+  )
+barplot(ARIMA.compare.Rsquare, col = colours, main = "Rsquared")
+legend(
+  "topleft",
+  c(
+    "model ARIMA(29,1,0)",
+    "model ARIMA(0,1,27)",
+    "model auto.arima",
+    "model ARIMA(8,1,8)"
+  ),
+  cex = 1.3,
+  bty = "n",
+  fill = colours
+)
 
 # diagram porównujący AIC dla różnych modeli
-ARIMA.compare.Rsquare <- c(ARIMA.model1$aic, ARIMA.model2$aic, 
-                           ARIMA.model3$aic, ARIMA.model4$aic)
-barplot(ARIMA.compare.Rsquare, col=colours, main="AIC")
-legend("topleft", c("model ARIMA(29,1,0)", 
-                    "model ARIMA(0,1,27)", "model auto.arima" ,"model ARIMA(8,1,8)"), cex=1.3, bty="n", fill=colours)
+ARIMA.compare.Rsquare <- c(ARIMA.model1$aic,
+                           ARIMA.model2$aic,
+                           ARIMA.model3$aic,
+                           ARIMA.model4$aic)
+barplot(ARIMA.compare.Rsquare, col = colours, main = "AIC")
+legend(
+  "topleft",
+  c(
+    "model ARIMA(29,1,0)",
+    "model ARIMA(0,1,27)",
+    "model auto.arima" ,
+    "model ARIMA(8,1,8)"
+  ),
+  cex = 1.3,
+  bty = "n",
+  fill = colours
+)
 
 
 # tabelka porównująca RMSE, Rsquared dla danych testowych
-data_1 <- data.table(RMSE = c(ARIMA.model1.postResample[1], ARIMA.model2.postResample[1],
-                              ARIMA.model3.postResample[1], ARIMA.model4.postResample[1]),
-                     Rsquared = c(ARIMA.model1.postResample[2], ARIMA.model2.postResample[2], 
-                           ARIMA.model3.postResample[2], ARIMA.model4.postResample[2])) 
+rossmann.ts.test.compare <-
+  data.table(
+    RMSE = c(
+      ARIMA.model1.postResample[1],
+      ARIMA.model2.postResample[1],
+      ARIMA.model3.postResample[1],
+      ARIMA.model4.postResample[1]
+    ),
+    
+    Rsquared = c(
+      ARIMA.model1.postResample[2],
+      ARIMA.model2.postResample[2],
+      ARIMA.model3.postResample[2],
+      ARIMA.model4.postResample[2]
+    )
+  )
 
-grid.table(data_1, rows = c("model ARIMA(29,1,0)", 
-                    "model ARIMA(0,1,27)", "model auto.arima" ,"model ARIMA(8,1,8)"))
+grid.table(
+  rossmann.ts.test.compare,
+  rows = c(
+    "model ARIMA(29,1,0)",
+    "model ARIMA(0,1,27)",
+    "model auto.arima" ,
+    "model ARIMA(8,1,8)"
+  )
+)
