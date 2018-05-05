@@ -8,6 +8,9 @@ library(sweep)
 library(lattice)
 library(expsmooth)
 library(caret)
+library(gridExtra)
+library(grid)
+library(data.table)    
 
 #wczytywanie danych z pliku CSV
 rossmann.csv = read.csv("D:/OneDrive/Studia WNE/praca dyplomowa/dane/rossmann/rossmann.csv")
@@ -184,56 +187,120 @@ print(ar.model.mle)
 ar.model.aic = ar(rossmann.ts.diff14.diff1, aic = TRUE)
 print(ar.model.aic)
 
-# teoretycznie mam teraz dwa modele ARIMA:
+# teoretycznie mam teraz trzy modele ARIMA:
 #     1. ARIMA(29,1,0)(0,1,0)
 #     2. ARIMA(0,1,27)(0,1,0)
 #     3. auto.arima
+
 ARIMA.model1 <- Arima(rossmann.ts.train, order = c(29,1,0), seasonal = list(order = c(0,1,0), period = 14))
 ARIMA.model1.pred = predict(ARIMA.model1, n.ahead = 30)
 ARIMA.model2 <- Arima(rossmann.ts.train, order = c(0,1,27), seasonal = list(order = c(0,1,0), period = 14))
 ARIMA.model2.pred = predict(ARIMA.model2, n.ahead = 30)
-ARIMA.autoarima <- auto.arima(rossmann.ts.train)
-ARIMA.autoarima.pred = predict(ARIMA.autoarima, n.ahead = 30)
+ARIMA.model3 <- auto.arima(rossmann.ts.train)
+ARIMA.model3.pred = predict(ARIMA.model3, n.ahead = 30)
+ARIMA.model4 <- Arima(rossmann.ts.train, order = c(8,1,8), seasonal = list(order = c(0,1,1), period = 14))
+ARIMA.model4.pred = predict(ARIMA.model4, n.ahead = 30)
+tsdisplay(ARIMA.model4$residuals)
+
+# wykresy reszt
+# nie widac na nich trendów i sezonowości
+# ale w resztach widac pewne niewyjaśnione zalezności
+plot(ARIMA.model1$residuals, main="Reszty dla modelu ARIMA(29,1,0)(0,1,0)")
+Acf(ARIMA.model1$residuals, main="ACF: Reszty dla modelu ARIMA(29,1,0)(0,1,0)")
+
+plot(ARIMA.model2$residuals, main="Reszty dla modelu ARIMA(0,1,27)(0,1,0)")
+Acf(ARIMA.model2$residuals, main="ACF: Reszty dla modelu ARIMA(0,1,27)(0,1,0)")
+
+plot(ARIMA.model3$residuals, main="Reszty dla modelu auto.arima")
+Acf(ARIMA.model3$residuals, main="ACF: Reszty dla modelu auto.arima")
+
+plot(ARIMA.model4$residuals, main="Reszty dla modelu ARIMA(8,1,8)(0,1,1)")
+Acf(ARIMA.model4$residuals, main="ACF: Reszty dla modelu ARIMA(8,1,8)(0,1,1)")
+
+# nie mamy podstaw do odrzucenia hipotezy zerowej, że reszty to biały szum: ARIMA(29,1,0)(0,1,0)
+Box.test(ARIMA.model1$residuals, lag = 1, type = "Ljung-Box")
+Box.test(ARIMA.model1$residuals, lag = 7, type = "Ljung-Box")
+Box.test(ARIMA.model1$residuals, lag = 14, type = "Ljung-Box")
+Box.test(ARIMA.model1$residuals, lag = 28, type = "Ljung-Box")
+tsdiag(ARIMA.model1, gof.lag = 28)
+
+
+# nie mamy podstaw do odrzucenia hipotezy zerowej, że reszty to biały szum: ARIMA(29,1,0)(0,1,0)
+Box.test(ARIMA.model2$residuals, lag = 1, type = "Ljung-Box")
+Box.test(ARIMA.model2$residuals, lag = 7, type = "Ljung-Box")
+Box.test(ARIMA.model2$residuals, lag = 14, type = "Ljung-Box")
+Box.test(ARIMA.model2$residuals, lag = 28, type = "Ljung-Box")
+tsdiag(ARIMA.model2, gof.lag = 28)
+
+# odrzucamy hipoteze zerową, że reszty to biały szum: auto.arima
+Box.test(ARIMA.model3$residuals, lag = 1, type = "Ljung-Box")
+Box.test(ARIMA.model3$residuals, lag = 7, type = "Ljung-Box")
+Box.test(ARIMA.model3$residuals, lag = 14, type = "Ljung-Box")
+Box.test(ARIMA.model3$residuals, lag = 28, type = "Ljung-Box")
+tsdiag(ARIMA.model3, gof.lag = 28)
+
+# nie mamy podstaw do odrzucenia hipotezy zerowej, że reszty to biały szum: ARIMA(8,1,8)(0,1,1)
+Box.test(ARIMA.model4$residuals, lag = 1, type = "Ljung-Box")
+Box.test(ARIMA.model4$residuals, lag = 7, type = "Ljung-Box")
+Box.test(ARIMA.model4$residuals, lag = 14, type = "Ljung-Box")
+Box.test(ARIMA.model4$residuals, lag = 28, type = "Ljung-Box")
+tsdiag(ARIMA.model4, gof.lag = 28)
 
 # narysuj wykresy przwidywanych funkcji
 plot(rossmann.ts.test, lwd=3)
 lines(ARIMA.model1.pred$pred, col='red')
 lines(ARIMA.model2.pred$pred, col='blue')
-lines(ARIMA.autoarima.pred$pred, col='green')
+lines(ARIMA.model3.pred$pred, col='green')
+lines(ARIMA.model4.pred$pred, col='magenta')
 grid()
 legend("bottomright", legend = c("Oryginalny szereg", "model ARIMA(29,1,0)", 
-                                 "model ARIMA(0,1,27)", "model auto.arima"),
+                                 "model ARIMA(0,1,27)", "model auto.arima", "model ARIMA(8,1,8)"),
        col = c("black", "red", "blue", "green"), lty=c(1,1,1,1))
 
 # narysuj wykresy modułów błędów
-plot(rossmann.ts.test, lwd=3)
-lines( abs(rossmann.ts.test - ARIMA.model1.pred$pred) , col='red')
-lines( abs(rossmann.ts.test - ARIMA.model2.pred$pred), col='blue')
-lines( abs(rossmann.ts.test - ARIMA.autoarima.pred$pred), col='green')
+plot(abs(rossmann.ts.test - ARIMA.model1.pred$pred) , col='red', lwd=2)
+lines( abs(rossmann.ts.test - ARIMA.model2.pred$pred), col='blue', lwd=2)
+lines( abs(rossmann.ts.test - ARIMA.model3.pred$pred), col='green', lwd=2)
+lines( abs(rossmann.ts.test - ARIMA.model4.pred$pred), col='magenta', lwd=2)
 grid()
-legend("topright", legend = c("Oryginalny szereg", "model ARIMA(29,1,0)", 
-                                 "model ARIMA(0,1,27)", "model auto.arima"),
-       col = c("black", "red", "blue", "green"), lty=c(1,1,1,1))
+legend("topright", legend = c("model ARIMA(29,1,0)", 
+                                 "model ARIMA(0,1,27)", "model auto.arima", "model ARIMA(8,1,8)"),
+       col = c("black", "red", "blue", "green", "magenta"), lty=c(1,1,1,1))
 
 # policz RMSE i Rsquared
 ARIMA.model1.postResample <- postResample(pred = ARIMA.model1.pred$pred, obs = rossmann.ts.test)
 ARIMA.model2.postResample <- postResample(pred = ARIMA.model2.pred$pred, obs = rossmann.ts.test)
-ARIMA.autoarima.postResample <- postResample(pred = ARIMA.autoarima.pred$pred, obs = rossmann.ts.test)
+ARIMA.model3.postResample <- postResample(pred = ARIMA.model3.pred$pred, obs = rossmann.ts.test)
+ARIMA.model4.postResample <- postResample(pred = ARIMA.model4.pred$pred, obs = rossmann.ts.test)
 
 # diagram porównujący RMSE różnych modeli
-colours <- c("red", "blue", "green")
-ARIMA.compare.RMSE <- c(ARIMA.model1.postResample[1], ARIMA.model2.postResample[1], ARIMA.autoarima.postResample[1])
+colours <- c("red", "blue", "green", "magenta")
+ARIMA.compare.RMSE <- c(ARIMA.model1.postResample[1], ARIMA.model2.postResample[1], 
+                        ARIMA.model3.postResample[1], ARIMA.model4.postResample[1])
 barplot(ARIMA.compare.RMSE, col=colours, main="RMSE")
 legend("topleft", c("model ARIMA(29,1,0)", 
-                    "model ARIMA(0,1,27)", "model auto.arima"), cex=1.3, bty="n", fill=colours)
+                    "model ARIMA(0,1,27)", "model auto.arima", "model ARIMA(8,1,8)"), cex=1.3, bty="n", fill=colours)
 
 # diagram porównujący Rsquared różnych modeli
-ARIMA.compare.Rsquare <- c(ARIMA.model1.postResample[2], ARIMA.model2.postResample[2], ARIMA.autoarima.postResample[2])
+ARIMA.compare.Rsquare <- c(ARIMA.model1.postResample[2], ARIMA.model2.postResample[2], 
+                           ARIMA.model3.postResample[2], ARIMA.model4.postResample[2])
 barplot(ARIMA.compare.Rsquare, col=colours, main="Rsquared")
 legend("topleft", c("model ARIMA(29,1,0)", 
-                    "model ARIMA(0,1,27)", "model auto.arima"), cex=1.3, bty="n", fill=colours)
+                    "model ARIMA(0,1,27)", "model auto.arima","model ARIMA(8,1,8)"), cex=1.3, bty="n", fill=colours)
+
+# diagram porównujący AIC dla różnych modeli
+ARIMA.compare.Rsquare <- c(ARIMA.model1$aic, ARIMA.model2$aic, 
+                           ARIMA.model3$aic, ARIMA.model4$aic)
+barplot(ARIMA.compare.Rsquare, col=colours, main="AIC")
+legend("topleft", c("model ARIMA(29,1,0)", 
+                    "model ARIMA(0,1,27)", "model auto.arima" ,"model ARIMA(8,1,8)"), cex=1.3, bty="n", fill=colours)
 
 
+# tabelka porównująca RMSE, Rsquared dla danych testowych
+data_1 <- data.table(RMSE = c(ARIMA.model1.postResample[1], ARIMA.model2.postResample[1],
+                              ARIMA.model3.postResample[1], ARIMA.model4.postResample[1]),
+                     Rsquared = c(ARIMA.model1.postResample[2], ARIMA.model2.postResample[2], 
+                           ARIMA.model3.postResample[2], ARIMA.model4.postResample[2])) 
 
-
-
+grid.table(data_1, rows = c("model ARIMA(29,1,0)", 
+                    "model ARIMA(0,1,27)", "model auto.arima" ,"model ARIMA(8,1,8)"))
