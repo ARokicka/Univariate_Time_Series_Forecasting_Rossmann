@@ -7,6 +7,7 @@ library(zoo)
 library(sweep)
 library(lattice)
 library(expsmooth)
+library(caret)
 
 #wczytywanie danych z pliku CSV
 rossmann.csv = read.csv("D:/OneDrive/Studia WNE/praca dyplomowa/dane/rossmann/rossmann.csv")
@@ -187,21 +188,52 @@ print(ar.model.aic)
 #     1. ARIMA(29,1,0)(0,1,0)
 #     2. ARIMA(0,1,27)(0,1,0)
 #     3. auto.arima
-
-
 ARIMA.model1 <- Arima(rossmann.ts.train, order = c(29,1,0), seasonal = list(order = c(0,1,0), period = 14))
-predicted = predict(ARIMA.model1, n.ahead = 30)
+ARIMA.model1.pred = predict(ARIMA.model1, n.ahead = 30)
 ARIMA.model2 <- Arima(rossmann.ts.train, order = c(0,1,27), seasonal = list(order = c(0,1,0), period = 14))
-predicted2 = predict(ARIMA.model2, n.ahead = 30)
-rossmann.ts.fit <- auto.arima(rossmann.ts.train)
-predicted3 = predict(rossmann.ts.fit, n.ahead = 30)
-plot(rossmann.ts.test )
-lines(predicted$pred, col='red')
-lines(predicted2$pred, col='blue')
-lines(predicted3$pred, col='green')
+ARIMA.model2.pred = predict(ARIMA.model2, n.ahead = 30)
+ARIMA.autoarima <- auto.arima(rossmann.ts.train)
+ARIMA.autoarima.pred = predict(ARIMA.autoarima, n.ahead = 30)
+
+# narysuj wykresy przwidywanych funkcji
+plot(rossmann.ts.test, lwd=3)
+lines(ARIMA.model1.pred$pred, col='red')
+lines(ARIMA.model2.pred$pred, col='blue')
+lines(ARIMA.autoarima.pred$pred, col='green')
 grid()
 legend("bottomright", legend = c("Oryginalny szereg", "model ARIMA(29,1,0)", 
                                  "model ARIMA(0,1,27)", "model auto.arima"),
        col = c("black", "red", "blue", "green"), lty=c(1,1,1,1))
+
+# narysuj wykresy modułów błędów
+plot(rossmann.ts.test, lwd=3)
+lines( abs(rossmann.ts.test - ARIMA.model1.pred$pred) , col='red')
+lines( abs(rossmann.ts.test - ARIMA.model2.pred$pred), col='blue')
+lines( abs(rossmann.ts.test - ARIMA.autoarima.pred$pred), col='green')
+grid()
+legend("topright", legend = c("Oryginalny szereg", "model ARIMA(29,1,0)", 
+                                 "model ARIMA(0,1,27)", "model auto.arima"),
+       col = c("black", "red", "blue", "green"), lty=c(1,1,1,1))
+
+# policz RMSE i Rsquared
+ARIMA.model1.postResample <- postResample(pred = ARIMA.model1.pred$pred, obs = rossmann.ts.test)
+ARIMA.model2.postResample <- postResample(pred = ARIMA.model2.pred$pred, obs = rossmann.ts.test)
+ARIMA.autoarima.postResample <- postResample(pred = ARIMA.autoarima.pred$pred, obs = rossmann.ts.test)
+
+# diagram porównujący RMSE różnych modeli
+colours <- c("red", "blue", "green")
+ARIMA.compare.RMSE <- c(ARIMA.model1.postResample[1], ARIMA.model2.postResample[1], ARIMA.autoarima.postResample[1])
+barplot(ARIMA.compare.RMSE, col=colours, main="RMSE")
+legend("topleft", c("model ARIMA(29,1,0)", 
+                    "model ARIMA(0,1,27)", "model auto.arima"), cex=1.3, bty="n", fill=colours)
+
+# diagram porównujący Rsquared różnych modeli
+ARIMA.compare.Rsquare <- c(ARIMA.model1.postResample[2], ARIMA.model2.postResample[2], ARIMA.autoarima.postResample[2])
+barplot(ARIMA.compare.Rsquare, col=colours, main="Rsquared")
+legend("topleft", c("model ARIMA(29,1,0)", 
+                    "model ARIMA(0,1,27)", "model auto.arima"), cex=1.3, bty="n", fill=colours)
+
+
+
 
 
