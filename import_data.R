@@ -220,6 +220,8 @@ print(ar.model.aic)
 #     1. ARIMA(29,1,0)(0,1,0)
 #     2. ARIMA(0,1,27)(0,1,0)
 #     3. auto.arima
+#     4. ARIMA (8,1,8)(0,1,1)
+#     5. TBATS
 
 ARIMA.model1 <-
   Arima(
@@ -246,6 +248,12 @@ ARIMA.model4 <-
 ARIMA.model4.pred = predict(ARIMA.model4, n.ahead = 30)
 tsdisplay(ARIMA.model4$residuals)
 
+TBATS.model1 <- tbats(rossmann.ts.train)
+TBATS.model1.pred <- forecast(TBATS.model1, h=30)
+plot(TBATS.model1.pred)
+TBATS.model1.pred.forecast <- window(TBATS.model1.pred$mean, start = c(131, 3))
+plot(TBATS.model1.pred.forecast)
+
 # wykresy reszt
 # nie widac na nich trendów i sezonowości
 # ale w resztach widac pewne niewyjaśnione zalezności
@@ -260,6 +268,10 @@ Acf(ARIMA.model3$residuals, main = "ACF: Reszty dla modelu auto.arima")
 
 plot(ARIMA.model4$residuals, main = "Reszty dla modelu ARIMA(8,1,8)(0,1,1)")
 Acf(ARIMA.model4$residuals, main = "ACF: Reszty dla modelu ARIMA(8,1,8)(0,1,1)")
+
+plot(TBATS.model1.pred$residuals, main = "Reszty dla modelu TBATS")
+Acf(TBATS.model1.pred$residuals, main = "ACF: Reszty dla modelu TBATS")
+
 
 # nie mamy podstaw do odrzucenia hipotezy zerowej, że reszty to biały szum: ARIMA(29,1,0)(0,1,0)
 Box.test(ARIMA.model1$residuals, lag = 1, type = "Ljung-Box")
@@ -290,12 +302,20 @@ Box.test(ARIMA.model4$residuals, lag = 14, type = "Ljung-Box")
 Box.test(ARIMA.model4$residuals, lag = 28, type = "Ljung-Box")
 tsdiag(ARIMA.model4, gof.lag = 28)
 
+# nie mamy podstaw do odrzucenia hipotezy zerowej, że reszty to biały szum: TBATS
+Box.test(TBATS.model1.pred$residuals, lag = 1, type = "Ljung-Box")
+Box.test(TBATS.model1.pred$residuals, lag = 7, type = "Ljung-Box")
+Box.test(TBATS.model1.pred$residuals, lag = 14, type = "Ljung-Box")
+Box.test(TBATS.model1.pred$residuals, lag = 28, type = "Ljung-Box")
+
+
 # narysuj wykresy przwidywanych funkcji
-plot(rossmann.ts.test, lwd = 3)
+plot(rossmann.ts.test, lwd = 3, col = 'black')
 lines(ARIMA.model1.pred$pred, col = 'red')
 lines(ARIMA.model2.pred$pred, col = 'blue')
 lines(ARIMA.model3.pred$pred, col = 'green')
 lines(ARIMA.model4.pred$pred, col = 'magenta')
+lines(TBATS.model1.pred.forecast, col = 'yellow')
 grid()
 legend(
   "bottomright",
@@ -304,10 +324,11 @@ legend(
     "model ARIMA(29,1,0)",
     "model ARIMA(0,1,27)",
     "model auto.arima",
-    "model ARIMA(8,1,8)"
+    "model ARIMA(8,1,8)",
+    "model TBATS"
   ),
-  col = c("black", "red", "blue", "green"),
-  lty = c(1, 1, 1, 1)
+  col = c("black", "red", "blue", "green", 'magenta', "yellow"),
+  lty = c(1, 1, 1, 1, 1, 1)
 )
 
 # narysuj wykresy modułów błędów
@@ -323,6 +344,9 @@ lines(abs(rossmann.ts.test - ARIMA.model3.pred$pred),
 lines(abs(rossmann.ts.test - ARIMA.model4.pred$pred),
       col = 'magenta',
       lwd = 2)
+lines(abs(rossmann.ts.test - TBATS.model1.pred.forecast),
+      col = 'yellow',
+      lwd = 2)
 grid()
 legend(
   "topright",
@@ -330,11 +354,26 @@ legend(
     "model ARIMA(29,1,0)",
     "model ARIMA(0,1,27)",
     "model auto.arima",
-    "model ARIMA(8,1,8)"
+    "model ARIMA(8,1,8)",
+    "model TBATS"
   ),
-  col = c("black", "red", "blue", "green", "magenta"),
-  lty = c(1, 1, 1, 1)
+  col = c("red", "blue", "green", 'magenta', "yellow"),
+  lty = c(1, 1, 1, 1, 1)
 )
+
+
+TBATS.model1 <- tbats(rossmann.ts.train, 
+                      use.box.cox = FALSE, 
+                      use.trend = FALSE, 
+                      use.damped.trend = TRUE,
+                      seasonal.periods = c(14), 
+                      use.arma.errors = TRUE, 
+                      trace = TRUE)
+
+TBATS.model1.pred <- forecast(TBATS.model1, h=30)
+plot(TBATS.model1.pred)
+TBATS.model1.pred.forecast <- window(TBATS.model1.pred$mean, start = c(131, 3))
+plot(TBATS.model1.pred.forecast)
 
 # policz RMSE i Rsquared
 ARIMA.model1.postResample <-
@@ -345,15 +384,20 @@ ARIMA.model3.postResample <-
   postResample(pred = ARIMA.model3.pred$pred, obs = rossmann.ts.test)
 ARIMA.model4.postResample <-
   postResample(pred = ARIMA.model4.pred$pred, obs = rossmann.ts.test)
+TBATS.model1.postResample <-
+  postResample(pred = TBATS.model1.pred.forecast, obs = rossmann.ts.test)
+
+
 
 # diagram porównujący RMSE różnych modeli
-colours <- c("red", "blue", "green", "magenta")
+colours <- c("red", "blue", "green", "magenta", "yellow")
 ARIMA.compare.RMSE <-
   c(
     ARIMA.model1.postResample[1],
     ARIMA.model2.postResample[1],
     ARIMA.model3.postResample[1],
-    ARIMA.model4.postResample[1]
+    ARIMA.model4.postResample[1],
+    TBATS.model1.postResample[1]
   )
 barplot(ARIMA.compare.RMSE, col = colours, main = "RMSE")
 legend(
@@ -362,12 +406,15 @@ legend(
     "model ARIMA(29,1,0)",
     "model ARIMA(0,1,27)",
     "model auto.arima",
-    "model ARIMA(8,1,8)"
+    "model ARIMA(8,1,8)",
+    "model TBATS"
   ),
   cex = 1.3,
   bty = "n",
   fill = colours
 )
+
+TBATS.model1.postResample[1]
 
 # diagram porównujący Rsquared różnych modeli
 ARIMA.compare.Rsquare <-
@@ -375,7 +422,8 @@ ARIMA.compare.Rsquare <-
     ARIMA.model1.postResample[2],
     ARIMA.model2.postResample[2],
     ARIMA.model3.postResample[2],
-    ARIMA.model4.postResample[2]
+    ARIMA.model4.postResample[2],
+    TBATS.model1.postResample[2]
   )
 barplot(ARIMA.compare.Rsquare, col = colours, main = "Rsquared")
 legend(
@@ -384,7 +432,8 @@ legend(
     "model ARIMA(29,1,0)",
     "model ARIMA(0,1,27)",
     "model auto.arima",
-    "model ARIMA(8,1,8)"
+    "model ARIMA(8,1,8)",
+    "model TBATS"
   ),
   cex = 1.3,
   bty = "n",
@@ -395,7 +444,8 @@ legend(
 ARIMA.compare.Rsquare <- c(ARIMA.model1$aic,
                            ARIMA.model2$aic,
                            ARIMA.model3$aic,
-                           ARIMA.model4$aic)
+                           ARIMA.model4$aic,
+                           TBATS.model1$AIC)
 barplot(ARIMA.compare.Rsquare, col = colours, main = "AIC")
 legend(
   "topleft",
@@ -403,7 +453,8 @@ legend(
     "model ARIMA(29,1,0)",
     "model ARIMA(0,1,27)",
     "model auto.arima" ,
-    "model ARIMA(8,1,8)"
+    "model ARIMA(8,1,8)",
+    "model TBATS"
   ),
   cex = 1.3,
   bty = "n",
@@ -418,14 +469,16 @@ rossmann.ts.test.compare <-
       ARIMA.model1.postResample[1],
       ARIMA.model2.postResample[1],
       ARIMA.model3.postResample[1],
-      ARIMA.model4.postResample[1]
+      ARIMA.model4.postResample[1],
+      TBATS.model1.postResample[1]
     ),
     
     Rsquared = c(
       ARIMA.model1.postResample[2],
       ARIMA.model2.postResample[2],
       ARIMA.model3.postResample[2],
-      ARIMA.model4.postResample[2]
+      ARIMA.model4.postResample[2],
+      TBATS.model1.postResample[2]
     )
   )
 
@@ -435,6 +488,7 @@ grid.table(
     "model ARIMA(29,1,0)",
     "model ARIMA(0,1,27)",
     "model auto.arima" ,
-    "model ARIMA(8,1,8)"
+    "model ARIMA(8,1,8)",
+    "model TBATS"
   )
 )
