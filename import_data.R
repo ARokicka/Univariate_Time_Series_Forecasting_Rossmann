@@ -254,6 +254,9 @@ plot(TBATS.model1.pred)
 TBATS.model1.pred.forecast <- window(TBATS.model1.pred$mean, start = c(131, 3))
 plot(TBATS.model1.pred.forecast)
 
+SNAIVE.model <- snaive(rossmann.ts.train, h = 30)
+
+
 # wykresy reszt
 # nie widac na nich trendów i sezonowości
 # ale w resztach widac pewne niewyjaśnione zalezności
@@ -387,7 +390,9 @@ ARIMA.model4.postResample <-
 TBATS.model1.postResample <-
   postResample(pred = TBATS.model1.pred.forecast, obs = rossmann.ts.test)
 
-
+# dodać błędy predykcji dla danych testowych out-of-sample (nie in-sample)
+ARIMA.model1.MAPE_test <- accuracy(ARIMA.model1.pred$pred, rossmann.ts.test)
+ARIMA.model1.MAPE_test
 
 # diagram porównujący RMSE różnych modeli
 colours <- c("red", "blue", "green", "magenta", "yellow")
