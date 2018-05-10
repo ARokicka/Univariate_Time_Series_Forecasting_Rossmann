@@ -200,6 +200,7 @@ tsdisplay(rossmann.ts.diff7.diff1)
 #rossmann.ts.diff_inv <- diffinv(rossmann.ts.diff_14_inv, lag = 7, xi = head(rossmann.ts, n = 14) )
 #tsdisplay(rossmann.ts.diff_inv)
 
+
 # test AR(p=13)
 # p = 30
 # ar.model.yw = ar(rossmann.ts.diff14.diff1,
@@ -256,24 +257,39 @@ plot(TBATS.model1.pred.forecast)
 
 SNAIVE.model <- snaive(rossmann.ts.train, h = 30)
 
+# Holt Winters
+HW.model1 <- hw(rossmann.ts.train, h = 30, seasonal = "multiplicative",
+                alpha = 0.02, beta = 0.0022)
+HW.model2 <- hw(rossmann.ts.train, h = 30, seasonal = "multiplicative")
+HW.model1$model
+accuracy(HW.model1$mean, rossmann.ts.test)
+accuracy(HW.model2$mean, rossmann.ts.test)
+plot(rossmann.ts.test, lwd = 3, col = 'black')
+lines(HW.model1$mean, col = 'red')
+lines(HW.model2$mean, col = 'green')
 
 # wykresy reszt
 # nie widac na nich trendów i sezonowości
 # ale w resztach widac pewne niewyjaśnione zalezności
 plot(ARIMA.model1$residuals, main = "Reszty dla modelu ARIMA(29,1,0)(0,1,0)")
 Acf(ARIMA.model1$residuals, main = "ACF: Reszty dla modelu ARIMA(29,1,0)(0,1,0)")
+hist(ARIMA.model1$residuals)
 
 plot(ARIMA.model2$residuals, main = "Reszty dla modelu ARIMA(0,1,27)(0,1,0)")
 Acf(ARIMA.model2$residuals, main = "ACF: Reszty dla modelu ARIMA(0,1,27)(0,1,0)")
+hist(ARIMA.model2$residuals)
 
 plot(ARIMA.model3$residuals, main = "Reszty dla modelu auto.arima")
 Acf(ARIMA.model3$residuals, main = "ACF: Reszty dla modelu auto.arima")
+hist(ARIMA.model3$residuals)
 
 plot(ARIMA.model4$residuals, main = "Reszty dla modelu ARIMA(8,1,8)(0,1,1)")
 Acf(ARIMA.model4$residuals, main = "ACF: Reszty dla modelu ARIMA(8,1,8)(0,1,1)")
+hist(ARIMA.model4$residuals)
 
 plot(TBATS.model1.pred$residuals, main = "Reszty dla modelu TBATS")
 Acf(TBATS.model1.pred$residuals, main = "ACF: Reszty dla modelu TBATS")
+hist(TBATS.model1.pred$residuals)
 
 
 # nie mamy podstaw do odrzucenia hipotezy zerowej, że reszty to biały szum: ARIMA(29,1,0)(0,1,0)
