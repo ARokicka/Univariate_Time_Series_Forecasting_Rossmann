@@ -55,7 +55,7 @@ rossmann <- merge(rossmann, rossmann_dayOfWeek, by = "Date")
 
 #tworze kolumne z id i ustawiam ja jako pierwsza
 rossmann$Id <- seq.int(nrow(rossmann))
-rossmann <- rossmann[, c(ncol(rossmann), 1:(ncol(data_set) - 1))]
+rossmann <- rossmann[, c(ncol(rossmann), 1:(ncol(rossmann) - 1))]
 
 #generuję ciąg dat, dzięki niemu wiem, jaki jest dzień roku
 data_sequence <-
@@ -201,20 +201,20 @@ tsdisplay(rossmann.ts.diff7.diff1)
 #tsdisplay(rossmann.ts.diff_inv)
 
 # test AR(p=13)
-p = 30
-ar.model.yw = ar(rossmann.ts.diff14.diff1,
-                 order.max = p,
-                 aic = FALSE)
-print(ar.model.yw)
-ar.model.mle = ar(
-  rossmann.ts.diff14.diff1,
-  order.max = p,
-  aic = FALSE,
-  method = "mle"
-)
-print(ar.model.mle)
-ar.model.aic = ar(rossmann.ts.diff14.diff1, aic = TRUE)
-print(ar.model.aic)
+# p = 30
+# ar.model.yw = ar(rossmann.ts.diff14.diff1,
+#                  order.max = p,
+#                  aic = FALSE)
+# print(ar.model.yw)
+# ar.model.mle = ar(
+#   rossmann.ts.diff14.diff1,
+#   order.max = p,
+#   aic = FALSE,
+#   method = "mle"
+# )
+# print(ar.model.mle)
+# ar.model.aic = ar(rossmann.ts.diff14.diff1, aic = TRUE)
+# print(ar.model.aic)
 
 # teoretycznie mam teraz trzy modele ARIMA:
 #     1. ARIMA(29,1,0)(0,1,0)
