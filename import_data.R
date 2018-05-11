@@ -259,7 +259,7 @@ SNAIVE.model <- snaive(rossmann.ts.train, h = 30)
 
 # Holt Winters
 HW.model1 <- hw(rossmann.ts.train, h = 30, seasonal = "multiplicative",
-                alpha = 0.02, beta = 0.0022)
+                alpha = 0.02, beta = 0.002)
 HW.auto <- hw(rossmann.ts.train, h = 30, seasonal = "multiplicative")
 HW.model1$model
 accuracy(HW.model1$mean, rossmann.ts.test)
@@ -268,7 +268,18 @@ plot(rossmann.ts.test, lwd = 3, col = 'black')
 lines(HW.model1$mean, col = 'red')
 lines(HW.auto$mean, col = 'green')
 
-# model ETS
+# model ETS 
+# AUTO = (M,N,M)
+ETS.auto <- ets(rossmann.ts.train)
+ETS.auto.pred <- forecast(ETS.auto, h = 30)
+ETS.model1 <- ets(rossmann.ts.train, model = "MNM",  alpha = 0.013, beta = 0.00l)
+ETS.model1.pred <- forecast(ETS.model1, h = 30)
+accuracy(ETS.auto.pred$mean, rossmann.ts.test)
+accuracy(ETS.model1.pred$mean, rossmann.ts.test)
+plot(rossmann.ts.test, lwd = 3, col = 'black')
+lines(ETS.auto.pred$mean, col = 'red')
+lines(ETS.model1.pred$mean, col = 'green')
+
 
 # wykresy reszt
 # nie widac na nich trendów i sezonowości
