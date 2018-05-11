@@ -272,13 +272,22 @@ lines(HW.auto$mean, col = 'green')
 # AUTO = (M,N,M)
 ETS.auto <- ets(rossmann.ts.train)
 ETS.auto.pred <- forecast(ETS.auto, h = 30)
-ETS.model1 <- ets(rossmann.ts.train, model = "MNM",  alpha = 0.013, beta = 0.00l)
+ETS.model1 <- ets(rossmann.ts.train, model = "MNM",  alpha = 0.013, beta = 0.002)
 ETS.model1.pred <- forecast(ETS.model1, h = 30)
 accuracy(ETS.auto.pred$mean, rossmann.ts.test)
 accuracy(ETS.model1.pred$mean, rossmann.ts.test)
 plot(rossmann.ts.test, lwd = 3, col = 'black')
 lines(ETS.auto.pred$mean, col = 'red')
 lines(ETS.model1.pred$mean, col = 'green')
+
+# model TSLM
+TSLM.trend.season <- tslm(rossmann.ts.train ~ trend + season)
+
+TSLM.trend.season.pred <- forecast(TSLM.trend.season, h = 30)
+
+accuracy(TSLM.trend.season.pred$mean, rossmann.ts.test)
+plot(rossmann.ts.test, lwd = 3, col = 'black')
+lines(TSLM.trend.season.pred$mean, col = 'red')
 
 
 # wykresy reszt
