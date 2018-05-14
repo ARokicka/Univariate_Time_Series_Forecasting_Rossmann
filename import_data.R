@@ -64,7 +64,6 @@ data_sequence <-
 start_day_no <-  as.numeric(format(data_sequence[1], "%j"))
 
 #tworzę szereg TS
-#rossmann.ts <- ts(rossmann$Sales, start = c(2013, start_day_no), frequency = 365.25)
 rossmann.ts <- ts(rossmann$Sales, start = 1, frequency = 7)
 
 #podział na dane testowe i uczące
@@ -81,10 +80,10 @@ plot(rossmann.ts.test)
 lines(fitted(rossmann.ts.fore), col = 'red')
 
 #narysuj cały zbiór danych podzielony na 5 wykresów, nakłada się 10% zawartości
-xyplot(rossmann.ts, aspect = 1 / 5)
+xyplot(rossmann.ts, aspect = 1 / 6)
 xyplot(rossmann.ts,
        strip = TRUE,
-       cut = list(number = 5, overlap = 0.1))
+       cut = list(number = 6, overlap = 0.1))
 
 #sezonoWość tygodniowa i trend - brak trendu długoterminowego
 par(mfrow = c(2, 1))
