@@ -282,7 +282,6 @@ ARIMA.model4.pred = predict(ARIMA.model4, n.ahead = 30)
 tsdisplay(ARIMA.model4$residuals)
 
 # TBATS
-
 TBATS.model1 <- tbats(rossmann.ts.train, 
                       use.box.cox = FALSE, 
                       use.trend = FALSE, 
@@ -298,7 +297,6 @@ plot(TBATS.model1.pred.forecast)
 SNAIVE.model <- snaive(rossmann.ts.train, h = 30)
 
 # Holt Winters
-
 HW.model1 <- hw(rossmann.ts.train, h = 30, seasonal = "multiplicative",
                 alpha = 0.02, beta = 0.002)
 HW.auto <- hw(rossmann.ts.train, h = 30, seasonal = "multiplicative")
@@ -335,21 +333,30 @@ TSLM.trend.season.pred <- forecast(TSLM.trend.season, h = 30)
 # nie widac na nich trendów i sezonowości
 # ale w resztach widac pewne niewyjaśnione zalezności
 
-par(mfrow = c(4, 1))
-plot(ARIMA.model1$residuals, main = "Reszty dla modelu ARIMA(29,1,0)(0,1,0)")
+par(mfrow = c(5, 2))
+plot(ARIMA.model1$residuals, main = "Reszty dla modelu ARIMA(28,1,0)(0,1,0)")
+Acf(ARIMA.model1$residuals, main = "ACF: Reszty dla modelu ARIMA(29,1,0)(0,1,0)")
 plot(ARIMA.model2$residuals, main = "Reszty dla modelu ARIMA(0,1,27)(0,1,0)")
+Acf(ARIMA.model1$residuals, main = "ACF: Reszty dla modelu ARIMA(29,1,0)(0,1,0)")
 plot(ARIMA.model3$residuals, main = "Reszty dla modelu auto.arima")
+Acf(ARIMA.model3$residuals, main = "ACF: Reszty dla modelu auto.arima")
 plot(ARIMA.model4$residuals, main = "Reszty dla modelu ARIMA(8,1,8)(0,1,1)")
-
-par(mfrow = c(3, 1))
+Acf(ARIMA.model4$residuals, main = "ACF: Reszty dla modelu ARIMA(8,1,8)(0,1,1)")
 plot(TBATS.model1.pred$residuals, main = "Reszty dla modelu TBATS")
-plot(ETS.auto.pred$residuals, main = "Reszty dla modelu ETS.auto")
-plot(TSLM.trend.season$residuals, main = "Reszty dla modelu TSLM")
+Acf(TBATS.model1.pred$residuals, main = "ACF: Reszty dla modelu TBATS")
 
-par(mfrow = c(3, 1))
+par(mfrow = c(5, 2))
+plot(ETS.auto.pred$residuals, main = "Reszty dla modelu ETS.auto")
+Acf(ETS.auto.pred$residuals, main = "ACF: Reszty dla modelu ETS.auto")
+plot(TSLM.trend.season$residuals, main = "Reszty dla modelu TSLM")
+Acf(TSLM.trend.season$residuals, main = "ACF: Reszty dla modelu TSLM")
 plot(SNAIVE.model$residuals, main = "Reszty dla modelu naive")
+Acf(SNAIVE.model$residuals, main = "ACF: Reszty dla modelu naive")
 plot(HW.auto$residuals, main = "Reszty dla modelu Holt-Winters-auto")
+Acf(HW.auto$residuals, main = "ACF: Reszty dla modelu Holt-Winters-auto")
 plot(HW.model1$residuals, main = "Reszty dla modelu Holt-Winters-adj")
+Acf(HW.model1$residuals, main = "ACF: Reszty dla modelu Holt-Winters-adj")
+
 
 
 # wykresy ACF
@@ -381,80 +388,41 @@ hist(SNAIVE.model$residuals)
 hist(HW.auto$residuals)
 hist(HW.model1$residuals)
 
+
 # nie mamy podstaw do odrzucenia hipotezy zerowej, że reszty to biały szum: ARIMA(29,1,0)(0,1,0)
 Box.test(ARIMA.model1$residuals, lag = 1, type = "Ljung-Box")
 Box.test(ARIMA.model1$residuals, lag = 7, type = "Ljung-Box")
-Box.test(ARIMA.model1$residuals, lag = 14, type = "Ljung-Box")
-Box.test(ARIMA.model1$residuals, lag = 28, type = "Ljung-Box")
-tsdiag(ARIMA.model1, gof.lag = 28)
 
-
-# nie mamy podstaw do odrzucenia hipotezy zerowej, że reszty to biały szum: ARIMA(29,1,0)(0,1,0)
 Box.test(ARIMA.model2$residuals, lag = 1, type = "Ljung-Box")
 Box.test(ARIMA.model2$residuals, lag = 7, type = "Ljung-Box")
-Box.test(ARIMA.model2$residuals, lag = 14, type = "Ljung-Box")
-Box.test(ARIMA.model2$residuals, lag = 28, type = "Ljung-Box")
-tsdiag(ARIMA.model2, gof.lag = 28)
 
-# odrzucamy hipoteze zerową, że reszty to biały szum: auto.arima
 Box.test(ARIMA.model3$residuals, lag = 1, type = "Ljung-Box")
 Box.test(ARIMA.model3$residuals, lag = 7, type = "Ljung-Box")
-Box.test(ARIMA.model3$residuals, lag = 14, type = "Ljung-Box")
-Box.test(ARIMA.model3$residuals, lag = 28, type = "Ljung-Box")
-tsdiag(ARIMA.model3, gof.lag = 28)
 
-# nie mamy podstaw do odrzucenia hipotezy zerowej, że reszty to biały szum: ARIMA(8,1,8)(0,1,1)
 Box.test(ARIMA.model4$residuals, lag = 1, type = "Ljung-Box")
 Box.test(ARIMA.model4$residuals, lag = 7, type = "Ljung-Box")
-Box.test(ARIMA.model4$residuals, lag = 14, type = "Ljung-Box")
-Box.test(ARIMA.model4$residuals, lag = 28, type = "Ljung-Box")
-tsdiag(ARIMA.model4, gof.lag = 28)
 
-# nie mamy podstaw do odrzucenia hipotezy zerowej, że reszty to biały szum: TBATS
 Box.test(TBATS.model1.pred$residuals, lag = 1, type = "Ljung-Box")
 Box.test(TBATS.model1.pred$residuals, lag = 7, type = "Ljung-Box")
-Box.test(TBATS.model1.pred$residuals, lag = 14, type = "Ljung-Box")
-Box.test(TBATS.model1.pred$residuals, lag = 28, type = "Ljung-Box")
-tsdiag(TBATS.model1.pred$model, gof.lag = 28)
 
-# ETS
 Box.test(ETS.auto.pred$residuals, lag = 1, type = "Ljung-Box")
 Box.test(ETS.auto.pred$residuals, lag = 7, type = "Ljung-Box")
-Box.test(ETS.auto.pred$residuals, lag = 14, type = "Ljung-Box")
-Box.test(ETS.auto.pred$residuals, lag = 28, type = "Ljung-Box")
-tsdiag(ETS.auto.pred$model, gof.lag = 28)
 
-# TSLM
 Box.test(TSLM.trend.season$residuals, lag = 1, type = "Ljung-Box")
 Box.test(TSLM.trend.season$residuals, lag = 7, type = "Ljung-Box")
-Box.test(TSLM.trend.season$residuals, lag = 14, type = "Ljung-Box")
-Box.test(TSLM.trend.season$residuals, lag = 28, type = "Ljung-Box")
-tsdiag(TSLM.trend.season, gof.lag = 28)
 
-# Naive
 Box.test(SNAIVE.model$residuals, lag = 1, type = "Ljung-Box")
 Box.test(SNAIVE.model$residuals, lag = 7, type = "Ljung-Box")
-Box.test(SNAIVE.model$residuals, lag = 14, type = "Ljung-Box")
-Box.test(SNAIVE.model$residuals, lag = 28, type = "Ljung-Box")
-# tsdiag(SNAIVE.model$, gof.lag = 28)
 
-# HW-auto
 Box.test(HW.auto$residuals, lag = 1, type = "Ljung-Box")
 Box.test(HW.auto$residuals, lag = 7, type = "Ljung-Box")
-Box.test(HW.auto$residuals, lag = 14, type = "Ljung-Box")
-Box.test(HW.auto$residuals, lag = 28, type = "Ljung-Box")
-tsdiag(HW.auto$model, gof.lag = 28)
 
-# HW-adj
 Box.test(HW.model1$residuals, lag = 1, type = "Ljung-Box")
 Box.test(HW.model1$residuals, lag = 7, type = "Ljung-Box")
-Box.test(HW.model1$residuals, lag = 14, type = "Ljung-Box")
-Box.test(HW.model1$residuals, lag = 28, type = "Ljung-Box")
-tsdiag(HW.model1$model, gof.lag = 28)
 
 # narysuj wykresy prognoz PART 1
 par(mfrow = c(2, 1))
-plot(rossmann.ts.test, lwd = 3, col = 'black')
+plot(rossmann.ts.test, lwd = 3, col = 'black', main = 'Prognozy dla danych testowych I/II')
 lines(ARIMA.model1.pred$pred, col = 'chocolate4')
 lines(ARIMA.model2.pred$pred, col = 'brown3')
 lines(ARIMA.model3.pred$pred, col = 'forestgreen')
@@ -465,17 +433,17 @@ legend(
   "bottomright",
   legend = c(
     "Oryginalny szereg",
-    "model ARIMA(29,1,0)",
-    "model ARIMA(0,1,27)",
-    "model auto.arima",
-    "model ARIMA(8,1,8)",
-    "model TBATS"
+    "ARIMA(29,1,0)",
+    "ARIMA(0,1,27)",
+    "auto.arima",
+    "ARIMA(8,1,8)",
+    "TBATS"
   ),
   col = c("black", "chocolate4", "brown3", "forestgreen", 'darkturquoise', "darkorange"),
   lty = c(1, 1, 1, 1, 1, 1)
 )
 # narysuj wykresy prognoz PART 2
-plot(rossmann.ts.test, lwd = 3, col = 'black')
+plot(rossmann.ts.test, lwd = 3, col = 'black', main = 'Prognozy dla danych testowych II/II')
 lines(HW.auto$mean, col = 'chocolate4')
 lines(HW.model1$mean, col = 'brown3')
 lines(ETS.auto.pred$mean, col = 'forestgreen')
@@ -486,11 +454,11 @@ legend(
   "bottomright",
   legend = c(
     "Oryginalny szereg",
-    "model Holt-Winters auto",
-    "model Holt-Winters adj",
-    "model ETS",
-    "model TSLM",
-    "model naive"
+    "Holt-Winters auto",
+    "Holt-Winters adj",
+    "ETS",
+    "TSLM",
+    "naive"
   ),
   col = c("black", "chocolate4", "brown3", "forestgreen", 'darkturquoise', "darkorange"),
   lty = c(1, 1, 1, 1, 1, 1)
@@ -499,39 +467,39 @@ legend(
 
 # narysuj wykresy błędów
 par(mfrow = c(2, 1))
-plot(abs(rossmann.ts.test - ARIMA.model1.pred$pred), col = 'chocolate4')
+plot(abs(rossmann.ts.test - ARIMA.model1.pred$pred), col = 'chocolate4', main = 'Błędy prognoz na danych testowych I/II')
 lines(abs(rossmann.ts.test - ARIMA.model2.pred$pred), col = 'brown3')
 lines(abs(rossmann.ts.test - ARIMA.model3.pred$pred), col = 'forestgreen')
 lines(abs(rossmann.ts.test - ARIMA.model4.pred$pred), col = 'darkturquoise')
 lines(abs(rossmann.ts.test - TBATS.model1.pred$mean), col = 'darkorange')
 grid()
 legend(
-  "bottomright",
+  "topleft",
   legend = c(
-    "model ARIMA(29,1,0)",
-    "model ARIMA(0,1,27)",
-    "model auto.arima",
-    "model ARIMA(8,1,8)",
-    "model TBATS"
+    "ARIMA(29,1,0)",
+    "ARIMA(0,1,27)",
+    "auto.arima",
+    "ARIMA(8,1,8)",
+    "TBATS"
   ),
   col = c("chocolate4", "brown3", "forestgreen", 'darkturquoise', 'darkorange'),
   lty = c(1, 1, 1, 1, 1)
 )
 
-plot(abs(rossmann.ts.test - HW.auto$mean), col = 'chocolate4')
+plot(abs(rossmann.ts.test - HW.auto$mean), col = 'chocolate4', main = 'Błędy prognoz na danych testowych I/II')
 lines(abs(rossmann.ts.test - HW.model1$mean), col = 'brown3')
 lines(abs(rossmann.ts.test - ETS.auto.pred$mean), col = 'forestgreen')
 lines(abs(rossmann.ts.test - TSLM.trend.season.pred$mean), col = 'darkturquoise')
 lines(abs(rossmann.ts.test - SNAIVE.model$mean), col = 'darkorange')
 grid()
 legend(
-  "bottomright",
+  "topleft",
   legend = c(
-    "model Holt-Winters auto",
-    "model Holt-Winters adj",
-    "model ETS",
-    "model TSLM",
-    "model naive"
+    "Holt-Winters auto",
+    "Holt-Winters adj",
+    "ETS",
+    "TSLM",
+    "naive"
   ),
   col = c("chocolate4", "brown3", "forestgreen", 'darkorange'),
   lty = c(1, 1, 1, 1, 1)
