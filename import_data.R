@@ -79,20 +79,19 @@ rossmann.ts.fore <- forecast(rossmann.ts.test, h = 30)
 plot(rossmann.ts.test)
 lines(fitted(rossmann.ts.fore), col = 'red')
 
-#narysuj cały zbiór danych podzielony na 5 wykresów, nakłada się 10% zawartości
+#narysuj cały zbiór danych podzielony na 5 wykresów, nakłada się 0% zawartości
 xyplot(rossmann.ts, aspect = 1 / 6)
 xyplot(rossmann.ts,
        strip = TRUE,
-       cut = list(number = 6, overlap = 0.1))
+       cut = list(number = 6, overlap = 0))
 
 #sezonoWość tygodniowa i trend - brak trendu długoterminowego
 par(mfrow = c(2, 1))
 monthplot(rossmann.ts)
 boxplot(rossmann.ts ~ cycle(rossmann.ts))
-#seasonplot(rossmann.ts, col = rainbow(12) )
 
 #wykresy rozrzutu dla wartości opóźionych - autokorelacja
-lag.plot(rossmann.ts, lags = 4, do.lines = FALSE)
+lag.plot(rossmann.ts, lags = 8, do.lines = FALSE)
 
 #wykresy rozrzutu dla reszt
 rossmann.ts.reszty <- decompose(rossmann.ts)$random
@@ -194,10 +193,18 @@ xyplot(
 ####
 
 # różnicowanie z opóźnieniem 14 i 1 => najlepsze efekty
+
+rossmann.ts.diff1 <- diff(rossmann.ts, lag = 1)
+tsdisplay(rossmann.ts.diff1)
+rossmann.ts.diff1.diff7 <- diff(rossmann.ts.diff1, lag = 7)
+tsdisplay(rossmann.ts.diff1.diff7)
+
+
 rossmann.ts.diff7 <- diff(rossmann.ts, lag = 7)
 tsdisplay(rossmann.ts.diff7)
 rossmann.ts.diff7.diff1 <- diff(rossmann.ts.diff7, lag = 1)
 tsdisplay(rossmann.ts.diff7.diff1)
+
 # jak widać najlepiej jest różnicować najpierw dla s=14, a pozniej s=1
 # wtedy pozbywamy sie sezonowosci
 # do tego wychodzi, że powinien najlepszy być model:
@@ -210,16 +217,23 @@ tsdisplay(rossmann.ts.diff7.diff1)
 #rossmann.ts.diff_inv <- diffinv(rossmann.ts.diff_14_inv, lag = 7, xi = head(rossmann.ts, n = 14) )
 #tsdisplay(rossmann.ts.diff_inv)
 
-
 # test AR(p=13)
-# p = 30
-# ar.model.yw = ar(rossmann.ts.diff14.diff1,
-#                  order.max = 30,
-#                  aic = FALSE)
-# 
-# plot(ar.model.yw$resid)
-# 
-# Acf(ar.model.yw$resid)
+p = 30
+ar.model.yw = ar(rossmann.ts.diff14.diff1,
+                 order.max = 30,
+                 aic = FALSE)
+
+par(mfrow = c(2, 1))
+plot(ar.model.yw$resid)
+Acf(ar.model.yw$resid)
+
+ma.model.yw = ma(rossmann.ts.diff14.diff1,
+                 order.max = 30,
+                 aic = FALSE)
+
+par(mfrow = c(2, 1))
+plot(ar.model.yw$resid)
+Acf(ar.model.yw$resid)
 # 
 # print(ar.model.yw)
 # ar.model.mle = ar(
@@ -244,7 +258,7 @@ print(ar.model.aic)
 ARIMA.model1 <-
   Arima(
     rossmann.ts.train,
-    order = c(29, 1, 0),
+    order = c(28, 1, 0),
     seasonal = list(order = c(0, 1, 0), period = 14)
   )
 ARIMA.model1.pred = predict(ARIMA.model1, n.ahead = 30)
@@ -789,14 +803,15 @@ legend(
 
 
 # tabelka porównująca RMSE, Rsquared dla danych testowych
+# do poprawy
 rossmann.ts.test.compare <-
   data.table(
     RMSE = c(
-      ARIMA.model1.postResample[1],
-      ARIMA.model2.postResample[1],
-      ARIMA.model3.postResample[1],
-      ARIMA.model4.postResample[1],
-      TBATS.model1.postResample[1]
+      ARIMA.model1.postResample[2],
+      ARIMA.model2.postResample[2],
+      ARIMA.model3.postResample[2],
+      ARIMA.model4.postResample[2],
+      TBATS.model1.postResample[2]
     ),
     
     Rsquared = c(
