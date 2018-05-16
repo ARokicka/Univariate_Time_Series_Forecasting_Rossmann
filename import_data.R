@@ -501,7 +501,7 @@ legend(
     "TSLM",
     "naive"
   ),
-  col = c("chocolate4", "brown3", "forestgreen", 'darkorange'),
+  col = c("chocolate4", "brown3", "forestgreen", 'darkturquoise', 'darkorange'),
   lty = c(1, 1, 1, 1, 1)
 )
 
@@ -527,7 +527,6 @@ HW.auto.postResample <-
   accuracy(HW.auto$mean, rossmann.ts.test)
 HW.model1.postResample <-
   accuracy(HW.model1$mean, rossmann.ts.test)
-
 
 # diagram porównujący RMSE różnych modeli
 ARIMA.compare.RMSE <-
@@ -556,7 +555,7 @@ names(ARIMA.compare.RMSE) <- c(
   "Holt-Winters adj"
 )
   
-barplot(ARIMA.compare.RMSE, col = rainbow(10), main = "RMSE")
+barplot(ARIMA.compare.RMSE, col = rainbow(10), main = "Błąd: kryterium RMSE")
 legend(
   "topleft",
   c(
@@ -603,9 +602,9 @@ names(ARIMA.compare.MAPE) <- c(
   "Holt-Winters adj"
 )
 
-barplot(ARIMA.compare.MAPE, col = rainbow(10), main = "MAPE")
+barplot(ARIMA.compare.MAPE, col = rainbow(10), main = "Błąd: kryterium MAPE")
 legend(
-  "topleft",
+  "topright",
   c(
     "ARIMA(29,1,0)",
     "ARIMA(0,1,27)",
@@ -650,7 +649,7 @@ names(ARIMA.compare.MAE) <- c(
   "Holt-Winters adj"
 )
 
-barplot(ARIMA.compare.MAE, col = rainbow(10), main = "MAE")
+barplot(ARIMA.compare.MAE, col = rainbow(10), main = "Błąd: kryterium MAE")
 legend(
   "topleft",
   c(
@@ -669,73 +668,23 @@ legend(
   bty = "n",
   fill = rainbow(10)
 )
-
-
-
-# diagram porównujący ME różnych modeli
-ARIMA.compare.ME <-
-  c(
-    ARIMA.model1.postResample[1],
-    ARIMA.model2.postResample[1],
-    ARIMA.model3.postResample[1],
-    ARIMA.model4.postResample[1],
-    TBATS.model1.postResample[1],
-    ETS.auto.postResample[1],
-    TSLM.trend.season.postResample[1],
-    SNAIVE.model.postResample[1],
-    HW.auto.postResample[1],
-    HW.model1.postResample[1]
-  )
-names(ARIMA.compare.ME) <- c(
-  "ARIMA(29,1,0)",
-  "ARIMA(0,1,27)",
-  "auto.arima",
-  "ARIMA(8,1,8)",
-  "TBATS",
-  "ETS",
-  "TSLM",
-  "naive",
-  "Holt-Winters auto",
-  "Holt-Winters adj"
-)
-
-barplot(ARIMA.compare.ME, col = rainbow(10), main = "ME")
-legend(
-  "topleft",
-  c(
-    "ARIMA(29,1,0)",
-    "ARIMA(0,1,27)",
-    "auto.arima",
-    "ARIMA(8,1,8)",
-    "TBATS",
-    "ETS",
-    "TSLM",
-    "naive",
-    "Holt-Winters auto",
-    "Holt-Winters adj"
-  ),
-  cex = 1.3,
-  bty = "n",
-  fill = rainbow(10)
-)
-
 
 
 # diagram porównujący MPE różnych modeli
-ARIMA.compare.MPE <-
+ARIMA.compare.Theil <-
   c(
-    ARIMA.model1.postResample[4],
-    ARIMA.model2.postResample[4],
-    ARIMA.model3.postResample[4],
-    ARIMA.model4.postResample[4],
-    TBATS.model1.postResample[4],
-    ETS.auto.postResample[4],
-    TSLM.trend.season.postResample[4],
-    SNAIVE.model.postResample[4],
-    HW.auto.postResample[4],
-    HW.model1.postResample[4]
+    ARIMA.model1.postResample[7],
+    ARIMA.model2.postResample[7],
+    ARIMA.model3.postResample[7],
+    ARIMA.model4.postResample[7],
+    TBATS.model1.postResample[7],
+    ETS.auto.postResample[7],
+    TSLM.trend.season.postResample[7],
+    SNAIVE.model.postResample[7],
+    HW.auto.postResample[7],
+    HW.model1.postResample[7]
   )
-names(ARIMA.compare.MPE) <- c(
+names(ARIMA.compare.Theil) <- c(
   "ARIMA(29,1,0)",
   "ARIMA(0,1,27)",
   "auto.arima",
@@ -748,7 +697,7 @@ names(ARIMA.compare.MPE) <- c(
   "Holt-Winters adj"
 )
 
-barplot(ARIMA.compare.MPE, col = rainbow(10), main = "MPE")
+barplot(ARIMA.compare.Theil, col = rainbow(10), main = "Błąd: kryterium Theila")
 legend(
   "topleft",
   c(
@@ -767,8 +716,6 @@ legend(
   bty = "n",
   fill = rainbow(10)
 )
-
-
 
 # tabelka porównująca RMSE, Rsquared dla danych testowych
 # do poprawy
@@ -779,15 +726,48 @@ rossmann.ts.test.compare <-
       ARIMA.model2.postResample[2],
       ARIMA.model3.postResample[2],
       ARIMA.model4.postResample[2],
-      TBATS.model1.postResample[2]
+      TBATS.model1.postResample[2],
+      ETS.auto.postResample[2],
+      TSLM.trend.season.postResample[2],
+      SNAIVE.model.postResample[2],
+      HW.auto.postResample[2],
+      HW.model1.postResample[2]
     ),
     
-    Rsquared = c(
-      ARIMA.model1.postResample[2],
-      ARIMA.model2.postResample[2],
-      ARIMA.model3.postResample[2],
-      ARIMA.model4.postResample[2],
-      TBATS.model1.postResample[2]
+    MAE = c(
+      ARIMA.model1.postResample[3],
+      ARIMA.model2.postResample[3],
+      ARIMA.model3.postResample[3],
+      ARIMA.model4.postResample[3],
+      TBATS.model1.postResample[3]
+    ),
+    MPE = c(
+      ARIMA.model1.postResample[4],
+      ARIMA.model2.postResample[4],
+      ARIMA.model3.postResample[4],
+      ARIMA.model4.postResample[4],
+      TBATS.model1.postResample[4]
+    ),
+    MAPE = c(
+      ARIMA.model1.postResample[5],
+      ARIMA.model2.postResample[5],
+      ARIMA.model3.postResample[5],
+      ARIMA.model4.postResample[5],
+      TBATS.model1.postResample[5]
+    ),
+    ACF1 = c(
+      ARIMA.model1.postResample[6],
+      ARIMA.model2.postResample[6],
+      ARIMA.model3.postResample[6],
+      ARIMA.model4.postResample[6],
+      TBATS.model1.postResample[6]
+    ),
+    Theil = c(
+      ARIMA.model1.postResample[7],
+      ARIMA.model2.postResample[7],
+      ARIMA.model3.postResample[7],
+      ARIMA.model4.postResample[7],
+      TBATS.model1.postResample[7]
     )
   )
 
