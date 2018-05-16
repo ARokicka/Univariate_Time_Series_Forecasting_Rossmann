@@ -13,11 +13,12 @@ library(grid)
 library(data.table)
 
 
+
 #wczytywanie danych z pliku CSV
 rossmann.csv = read.csv("D:/OneDrive/Studia WNE/praca dyplomowa/dane/rossmann/rossmann.csv")
 
 #sortowanie
-rossmann <- rossmann.csv[order(rossmann.csv$Date), ]
+rossmann <- rossmann.csv[order(rossmann.csv$Date),]
 
 #święta kodowane jako 0-jest; 1-nie ma
 rossmann$StateHoliday <- gsub("a", "1", rossmann$StateHoliday)
@@ -34,9 +35,9 @@ rossmann_dayOfWeek <- cbind(rossmann)
 rossmann_dayOfWeek[, 4:9] <- NULL
 rossmann_dayOfWeek[, 1] <- NULL
 rossmann_dayOfWeek <-
-  rossmann_dayOfWeek[!duplicated(rossmann_dayOfWeek$Date), ]
+  rossmann_dayOfWeek[!duplicated(rossmann_dayOfWeek$Date),]
 rossmann_dayOfWeek <-
-  rossmann_dayOfWeek[order(rossmann_dayOfWeek$Date), ]
+  rossmann_dayOfWeek[order(rossmann_dayOfWeek$Date),]
 
 #usuniecie niepotrzebnych zmiennych
 rossmann$DayOfWeek <- NULL
@@ -152,9 +153,11 @@ xyplot(rossmann.ts.ma10,
 rossmann.ts.dekomp.add <- decompose(rossmann.ts, type = "additive")
 plot(rossmann.ts.dekomp.add)
 tsdisplay(rossmann.ts.dekomp.add$random)
-xyplot(rossmann.ts.dekomp.add$random,
-       strip = TRUE,
-       cut = list(number = 5, overlap = 0.1))
+xyplot(
+  rossmann.ts.dekomp.add$random,
+  strip = TRUE,
+  cut = list(number = 5, overlap = 0.1)
+)
 # wychodzimy poza przedział ufności -> reszty nie przypominaj abialego szumu, za duzo
 # wartosci poza przedzialem ufnosci
 # widac tez sezonowosc
@@ -164,9 +167,11 @@ rossmann.ts.dekomp.multi <-
   decompose(rossmann.ts, type = "multiplicative")
 plot(rossmann.ts.dekomp.multi)
 tsdisplay(rossmann.ts.dekomp.multi$random)
-xyplot(rossmann.ts.dekomp.multi$random,
-       strip = TRUE,
-       cut = list(number = 5, overlap = 0.1))
+xyplot(
+  rossmann.ts.dekomp.multi$random,
+  strip = TRUE,
+  cut = list(number = 5, overlap = 0.1)
+)
 # wychodzimy poza przedział ufności -> reszty nie przypominaj abialego szumu, za duzo
 # wartosci poza przedzialem ufnosci
 # widac tez sezonowosc
@@ -234,7 +239,7 @@ ma.model.yw = ma(rossmann.ts.diff14.diff1,
 par(mfrow = c(2, 1))
 plot(ar.model.yw$resid)
 Acf(ar.model.yw$resid)
-# 
+#
 # print(ar.model.yw)
 # ar.model.mle = ar(
 #   rossmann.ts.diff14.diff1,
@@ -242,7 +247,7 @@ Acf(ar.model.yw$resid)
 #   aic = FALSE,
 #   method = "mle"
 # )
-# 
+#
 
 print(ar.model.mle)
 ar.model.aic = ar(rossmann.ts.diff14.diff1, aic = TRUE)
@@ -282,24 +287,34 @@ ARIMA.model4.pred = predict(ARIMA.model4, n.ahead = 30)
 tsdisplay(ARIMA.model4$residuals)
 
 # TBATS
-TBATS.model1 <- tbats(rossmann.ts.train, 
-                      use.box.cox = FALSE, 
-                      use.trend = FALSE, 
-                      use.damped.trend = TRUE,
-                      seasonal.periods = c(14), 
-                      use.arma.errors = TRUE, 
-                      trace = TRUE)
-TBATS.model1.pred <- forecast(TBATS.model1, h=30)
+TBATS.model1 <- tbats(
+  rossmann.ts.train,
+  use.box.cox = FALSE,
+  use.trend = FALSE,
+  use.damped.trend = TRUE,
+  seasonal.periods = c(14),
+  use.arma.errors = TRUE,
+  trace = TRUE
+)
+TBATS.model1.pred <- forecast(TBATS.model1, h = 30)
 plot(TBATS.model1.pred)
-TBATS.model1.pred.forecast <- window(TBATS.model1.pred$mean, start = c(131, 3))
+TBATS.model1.pred.forecast <-
+  window(TBATS.model1.pred$mean, start = c(131, 3))
 plot(TBATS.model1.pred.forecast)
 
 SNAIVE.model <- snaive(rossmann.ts.train, h = 30)
 
 # Holt Winters
-HW.model1 <- hw(rossmann.ts.train, h = 30, seasonal = "multiplicative",
-                alpha = 0.02, beta = 0.002)
-HW.auto <- hw(rossmann.ts.train, h = 30, seasonal = "multiplicative")
+HW.model1 <-
+  hw(
+    rossmann.ts.train,
+    h = 30,
+    seasonal = "multiplicative",
+    alpha = 0.02,
+    beta = 0.002
+  )
+HW.auto <-
+  hw(rossmann.ts.train, h = 30, seasonal = "multiplicative")
 
 #HW.model1$model
 #accuracy(HW.model1$mean, rossmann.ts.test)
@@ -308,11 +323,15 @@ HW.auto <- hw(rossmann.ts.train, h = 30, seasonal = "multiplicative")
 #lines(HW.model1$mean, col = 'red')
 #lines(HW.auto$mean, col = 'green')
 
-# model ETS 
+# model ETS
 # AUTO = (M,N,M)
 ETS.auto <- ets(rossmann.ts.train)
 ETS.auto.pred <- forecast(ETS.auto, h = 30)
-ETS.model1 <- ets(rossmann.ts.train, model = "MNM",  alpha = 0.013, beta = 0.002)
+ETS.model1 <-
+  ets(rossmann.ts.train,
+      model = "MNM",
+      alpha = 0.013,
+      beta = 0.002)
 ETS.model1.pred <- forecast(ETS.model1, h = 30)
 #accuracy(ETS.auto.pred$mean, rossmann.ts.test)
 #accuracy(ETS.model1.pred$mean, rossmann.ts.test)
@@ -422,7 +441,10 @@ Box.test(HW.model1$residuals, lag = 7, type = "Ljung-Box")
 
 # narysuj wykresy prognoz PART 1
 par(mfrow = c(2, 1))
-plot(rossmann.ts.test, lwd = 3, col = 'black', main = 'Prognozy dla danych testowych I/II')
+plot(rossmann.ts.test,
+     lwd = 3,
+     col = 'black',
+     main = 'Prognozy dla danych testowych I/II')
 lines(ARIMA.model1.pred$pred, col = 'chocolate4')
 lines(ARIMA.model2.pred$pred, col = 'brown3')
 lines(ARIMA.model3.pred$pred, col = 'forestgreen')
@@ -439,11 +461,21 @@ legend(
     "ARIMA(8,1,8)",
     "TBATS"
   ),
-  col = c("black", "chocolate4", "brown3", "forestgreen", 'darkturquoise', "darkorange"),
+  col = c(
+    "black",
+    "chocolate4",
+    "brown3",
+    "forestgreen",
+    'darkturquoise',
+    "darkorange"
+  ),
   lty = c(1, 1, 1, 1, 1, 1)
 )
 # narysuj wykresy prognoz PART 2
-plot(rossmann.ts.test, lwd = 3, col = 'black', main = 'Prognozy dla danych testowych II/II')
+plot(rossmann.ts.test,
+     lwd = 3,
+     col = 'black',
+     main = 'Prognozy dla danych testowych II/II')
 lines(HW.auto$mean, col = 'chocolate4')
 lines(HW.model1$mean, col = 'brown3')
 lines(ETS.auto.pred$mean, col = 'forestgreen')
@@ -460,14 +492,23 @@ legend(
     "TSLM",
     "naive"
   ),
-  col = c("black", "chocolate4", "brown3", "forestgreen", 'darkturquoise', "darkorange"),
+  col = c(
+    "black",
+    "chocolate4",
+    "brown3",
+    "forestgreen",
+    'darkturquoise',
+    "darkorange"
+  ),
   lty = c(1, 1, 1, 1, 1, 1)
 )
 
 
 # narysuj wykresy błędów
 par(mfrow = c(2, 1))
-plot(abs(rossmann.ts.test - ARIMA.model1.pred$pred), col = 'chocolate4', main = 'Błędy prognoz na danych testowych I/II')
+plot(abs(rossmann.ts.test - ARIMA.model1.pred$pred),
+     col = 'chocolate4',
+     main = 'Błędy prognoz na danych testowych I/II')
 lines(abs(rossmann.ts.test - ARIMA.model2.pred$pred), col = 'brown3')
 lines(abs(rossmann.ts.test - ARIMA.model3.pred$pred), col = 'forestgreen')
 lines(abs(rossmann.ts.test - ARIMA.model4.pred$pred), col = 'darkturquoise')
@@ -482,11 +523,19 @@ legend(
     "ARIMA(8,1,8)",
     "TBATS"
   ),
-  col = c("chocolate4", "brown3", "forestgreen", 'darkturquoise', 'darkorange'),
+  col = c(
+    "chocolate4",
+    "brown3",
+    "forestgreen",
+    'darkturquoise',
+    'darkorange'
+  ),
   lty = c(1, 1, 1, 1, 1)
 )
 
-plot(abs(rossmann.ts.test - HW.auto$mean), col = 'chocolate4', main = 'Błędy prognoz na danych testowych I/II')
+plot(abs(rossmann.ts.test - HW.auto$mean),
+     col = 'chocolate4',
+     main = 'Błędy prognoz na danych testowych I/II')
 lines(abs(rossmann.ts.test - HW.model1$mean), col = 'brown3')
 lines(abs(rossmann.ts.test - ETS.auto.pred$mean), col = 'forestgreen')
 lines(abs(rossmann.ts.test - TSLM.trend.season.pred$mean), col = 'darkturquoise')
@@ -494,14 +543,18 @@ lines(abs(rossmann.ts.test - SNAIVE.model$mean), col = 'darkorange')
 grid()
 legend(
   "topleft",
-  legend = c(
-    "Holt-Winters auto",
-    "Holt-Winters adj",
-    "ETS",
-    "TSLM",
-    "naive"
+  legend = c("Holt-Winters auto",
+             "Holt-Winters adj",
+             "ETS",
+             "TSLM",
+             "naive"),
+  col = c(
+    "chocolate4",
+    "brown3",
+    "forestgreen",
+    'darkturquoise',
+    'darkorange'
   ),
-  col = c("chocolate4", "brown3", "forestgreen", 'darkturquoise', 'darkorange'),
   lty = c(1, 1, 1, 1, 1)
 )
 
@@ -554,7 +607,7 @@ names(ARIMA.compare.RMSE) <- c(
   "Holt-Winters auto",
   "Holt-Winters adj"
 )
-  
+
 barplot(ARIMA.compare.RMSE, col = rainbow(10), main = "Błąd: kryterium RMSE")
 legend(
   "topleft",
@@ -574,6 +627,7 @@ legend(
   bty = "n",
   fill = rainbow(10)
 )
+
 
 # diagram porównujący MAPE różnych modeli
 ARIMA.compare.MAPE <-
@@ -717,67 +771,88 @@ legend(
   fill = rainbow(10)
 )
 
-# tabelka porównująca RMSE, Rsquared dla danych testowych
-# do poprawy
+# tabelka porównująca błędy
 rossmann.ts.test.compare <-
   data.table(
     RMSE = c(
-      ARIMA.model1.postResample[2],
-      ARIMA.model2.postResample[2],
-      ARIMA.model3.postResample[2],
-      ARIMA.model4.postResample[2],
-      TBATS.model1.postResample[2],
-      ETS.auto.postResample[2],
-      TSLM.trend.season.postResample[2],
-      SNAIVE.model.postResample[2],
-      HW.auto.postResample[2],
-      HW.model1.postResample[2]
+      prettyNum(format(round(ARIMA.model1.postResample[2], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ARIMA.model2.postResample[2], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ARIMA.model3.postResample[2], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ARIMA.model4.postResample[2], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(TBATS.model1.postResample[2], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ETS.auto.postResample[2], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(TSLM.trend.season.postResample[2], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(SNAIVE.model.postResample[2], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(HW.auto.postResample[2], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(HW.model1.postResample[2], 2), nsmall = 2),big.mark=" ",scientific=FALSE)
     ),
     
     MAE = c(
-      ARIMA.model1.postResample[3],
-      ARIMA.model2.postResample[3],
-      ARIMA.model3.postResample[3],
-      ARIMA.model4.postResample[3],
-      TBATS.model1.postResample[3]
-    ),
-    MPE = c(
-      ARIMA.model1.postResample[4],
-      ARIMA.model2.postResample[4],
-      ARIMA.model3.postResample[4],
-      ARIMA.model4.postResample[4],
-      TBATS.model1.postResample[4]
+      prettyNum(format(round(ARIMA.model1.postResample[3], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ARIMA.model2.postResample[3], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ARIMA.model3.postResample[3], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ARIMA.model4.postResample[3], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(TBATS.model1.postResample[3], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ETS.auto.postResample[3], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(TSLM.trend.season.postResample[3], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(SNAIVE.model.postResample[3], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(HW.auto.postResample[3], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(HW.model1.postResample[3], 2), nsmall = 2),big.mark=" ",scientific=FALSE)
     ),
     MAPE = c(
-      ARIMA.model1.postResample[5],
-      ARIMA.model2.postResample[5],
-      ARIMA.model3.postResample[5],
-      ARIMA.model4.postResample[5],
-      TBATS.model1.postResample[5]
+      paste(prettyNum(format(round(ARIMA.model1.postResample[5], 2), nsmall = 2),big.mark=" ",scientific=FALSE),"%"),
+      paste(prettyNum(format(round(ARIMA.model2.postResample[5], 2), nsmall = 2),big.mark=" ",scientific=FALSE),"%"),
+      paste(prettyNum(format(round(ARIMA.model3.postResample[5], 2), nsmall = 2),big.mark=" ",scientific=FALSE),"%"),
+      paste(prettyNum(format(round(ARIMA.model4.postResample[5], 2), nsmall = 2),big.mark=" ",scientific=FALSE),"%"),
+      paste(prettyNum(format(round(TBATS.model1.postResample[5], 2), nsmall = 2),big.mark=" ",scientific=FALSE),"%"),
+      paste(prettyNum(format(round(ETS.auto.postResample[5], 2), nsmall = 2),big.mark=" ",scientific=FALSE),"%"),
+      paste(prettyNum(format(round(TSLM.trend.season.postResample[5], 2), nsmall = 2),big.mark=" ",scientific=FALSE),"%"),
+      paste(prettyNum(format(round(SNAIVE.model.postResample[5], 2), nsmall = 2),big.mark=" ",scientific=FALSE),"%"),
+      paste(prettyNum(format(round(HW.auto.postResample[5], 2), nsmall = 2),big.mark=" ",scientific=FALSE),"%"),
+      paste(prettyNum(format(round(HW.model1.postResample[5], 2), nsmall = 2),big.mark=" ",scientific=FALSE),"%")
     ),
     ACF1 = c(
-      ARIMA.model1.postResample[6],
-      ARIMA.model2.postResample[6],
-      ARIMA.model3.postResample[6],
-      ARIMA.model4.postResample[6],
-      TBATS.model1.postResample[6]
+      prettyNum(format(round(ARIMA.model1.postResample[6], 3), nsmall = 3),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ARIMA.model2.postResample[6], 3), nsmall = 3),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ARIMA.model3.postResample[6], 3), nsmall = 3),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ARIMA.model4.postResample[6], 3), nsmall = 3),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(TBATS.model1.postResample[6], 3), nsmall = 3),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ETS.auto.postResample[6], 3), nsmall = 3),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(TSLM.trend.season.postResample[6], 3), nsmall = 3),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(SNAIVE.model.postResample[6], 3), nsmall = 3),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(HW.auto.postResample[6], 3), nsmall = 3),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(HW.model1.postResample[6], 3), nsmall = 3),big.mark=" ",scientific=FALSE)
     ),
     Theil = c(
-      ARIMA.model1.postResample[7],
-      ARIMA.model2.postResample[7],
-      ARIMA.model3.postResample[7],
-      ARIMA.model4.postResample[7],
-      TBATS.model1.postResample[7]
+      prettyNum(format(round(ARIMA.model1.postResample[7], 3), nsmall = 3),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ARIMA.model2.postResample[7], 3), nsmall = 3),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ARIMA.model3.postResample[7], 3), nsmall = 3),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ARIMA.model4.postResample[7], 3), nsmall = 3),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(TBATS.model1.postResample[7], 3), nsmall = 3),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ETS.auto.postResample[7], 3), nsmall = 3),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(TSLM.trend.season.postResample[7], 3), nsmall = 3),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(SNAIVE.model.postResample[7], 3), nsmall = 3),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(HW.auto.postResample[7], 3), nsmall = 3),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(HW.model1.postResample[7], 3), nsmall = 3),big.mark=" ",scientific=FALSE)
     )
   )
 
+
+myt <- ttheme_default(core = list(fg_params = list(hjust = 1, x = 1)))
+
 grid.table(
   rossmann.ts.test.compare,
+  theme = myt,
   rows = c(
-    "model ARIMA(29,1,0)",
-    "model ARIMA(0,1,27)",
-    "model auto.arima" ,
-    "model ARIMA(8,1,8)",
-    "model TBATS"
+    "ARIMA(29,1,0)",
+    "ARIMA(0,1,27)",
+    "auto.arima" ,
+    "ARIMA(8,1,8)",
+    "TBATS",
+    "ETS",
+    "TSLM",
+    "SNAIVE",
+    "Holt-Winters auto",
+    "Holt-Winters adj"
   )
 )
