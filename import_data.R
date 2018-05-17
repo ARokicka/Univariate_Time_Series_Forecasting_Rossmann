@@ -268,7 +268,7 @@ ARIMA.model1 <-
   Arima(
     rossmann.ts.train,
     order = c(28, 1, 0),
-    seasonal = list(order = c(0, 1, 0), period = 7)
+    seasonal = list(order = c(0, 1, 0), period = 14)
   )
 ARIMA.model1.pred = predict(ARIMA.model1, n.ahead = 30)
 
@@ -276,7 +276,7 @@ ARIMA.model2 <-
   Arima(
     rossmann.ts.train,
     order = c(0, 1, 27),
-    seasonal = list(order = c(0, 1, 0), period = 7)
+    seasonal = list(order = c(0, 1, 0), period = 14)
   )
 ARIMA.model2.pred = predict(ARIMA.model2, n.ahead = 30)
 ARIMA.model3 <- auto.arima(rossmann.ts.train)
@@ -286,7 +286,7 @@ ARIMA.model4 <-
   Arima(
     rossmann.ts.train,
     order = c(8, 1, 8),
-    seasonal = list(order = c(0, 1, 1), period = 7)
+    seasonal = list(order = c(0, 1, 1), period = 14)
   )
 
 ARIMA.model4.pred = predict(ARIMA.model4, n.ahead = 30)
