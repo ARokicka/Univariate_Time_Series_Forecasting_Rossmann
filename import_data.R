@@ -12,10 +12,11 @@ library(gridExtra)
 library(grid)
 library(data.table)
 
-
-
 #wczytywanie danych z pliku CSV
 rossmann.csv = read.csv("D:/OneDrive/Studia WNE/praca dyplomowa/dane/rossmann/rossmann.csv")
+
+head(rossmann.csv)
+tail(rossmann.csv)
 
 #sortowanie
 rossmann <- rossmann.csv[order(rossmann.csv$Date),]
@@ -65,6 +66,8 @@ data_sequence <-
 start_day_no <-  as.numeric(format(data_sequence[1], "%j"))
 
 #tworzę szereg TS
+class(rossmann.ts)
+typeof(rossmann.ts)
 rossmann.ts <- ts(rossmann$Sales, start = 1, frequency = 7)
 
 #podział na dane testowe i uczące
@@ -77,7 +80,7 @@ rossmann.ts.fit <- auto.arima(rossmann.ts.train)
 rossmann.ts.fore <- forecast(rossmann.ts.test, h = 30)
 
 #narysuj prognozę
-plot(rossmann.ts.test)
+plot(rossmann.ts)
 lines(fitted(rossmann.ts.fore), col = 'red')
 
 #narysuj cały zbiór danych podzielony na 5 wykresów, nakłada się 0% zawartości
@@ -117,6 +120,7 @@ grid()
 
 # różnicowanie z opóźnieniem 1 i 7
 rossmann.ts.diff <- diff(rossmann.ts)
+tsdisplay(rossmann.ts.diff)
 rossmann.ts.diff7 <- diff(rossmann.ts, lag = 7)
 tsdisplay(rossmann.ts.diff7)
 
@@ -228,17 +232,17 @@ ar.model.yw = ar(rossmann.ts.diff14.diff1,
                  order.max = 30,
                  aic = FALSE)
 
-par(mfrow = c(2, 1))
-plot(ar.model.yw$resid)
+#par(mfrow = c(2, 1))
+#plot(ar.model.yw$resid)
 Acf(ar.model.yw$resid)
 
 ma.model.yw = ma(rossmann.ts.diff14.diff1,
-                 order.max = 30,
+                 order.max = 2,
                  aic = FALSE)
 
-par(mfrow = c(2, 1))
-plot(ar.model.yw$resid)
-Acf(ar.model.yw$resid)
+#par(mfrow = c(2, 1))
+#plot(ar.model.yw$resid)
+Acf(ma.model.yw$resid)
 #
 # print(ar.model.yw)
 # ar.model.mle = ar(
@@ -264,7 +268,7 @@ ARIMA.model1 <-
   Arima(
     rossmann.ts.train,
     order = c(28, 1, 0),
-    seasonal = list(order = c(0, 1, 0), period = 14)
+    seasonal = list(order = c(0, 1, 0), period = 7)
   )
 ARIMA.model1.pred = predict(ARIMA.model1, n.ahead = 30)
 
@@ -272,17 +276,19 @@ ARIMA.model2 <-
   Arima(
     rossmann.ts.train,
     order = c(0, 1, 27),
-    seasonal = list(order = c(0, 1, 0), period = 14)
+    seasonal = list(order = c(0, 1, 0), period = 7)
   )
 ARIMA.model2.pred = predict(ARIMA.model2, n.ahead = 30)
 ARIMA.model3 <- auto.arima(rossmann.ts.train)
 ARIMA.model3.pred = predict(ARIMA.model3, n.ahead = 30)
+
 ARIMA.model4 <-
   Arima(
     rossmann.ts.train,
     order = c(8, 1, 8),
-    seasonal = list(order = c(0, 1, 1), period = 14)
+    seasonal = list(order = c(0, 1, 1), period = 7)
   )
+
 ARIMA.model4.pred = predict(ARIMA.model4, n.ahead = 30)
 tsdisplay(ARIMA.model4$residuals)
 
