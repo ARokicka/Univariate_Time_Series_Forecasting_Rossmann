@@ -12,7 +12,7 @@ library(gridExtra)
 library(grid)
 library(data.table)
 
-#wczytywanie danych z pliku CSV
+#wczytywanie danych z pliku CSV test
 rossmann.csv = read.csv("D:/OneDrive/Studia WNE/praca dyplomowa/dane/rossmann/rossmann.csv")
 
 head(rossmann.csv)
