@@ -26,7 +26,7 @@ rossmann$StateHoliday <- gsub("a", "1", rossmann$StateHoliday)
 rossmann$StateHoliday <- gsub("b", "1", rossmann$StateHoliday)
 rossmann$StateHoliday <- gsub("c", "1", rossmann$StateHoliday)
 
-#przekształcenie zmiennych z factor na numeric
+#przekształcenie  zmiennych z factor na numeric
 for (i in 4:9) {
   rossmann[, i] <-  as.numeric(as.character(rossmann[, i]))
 }
