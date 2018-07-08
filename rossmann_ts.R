@@ -91,8 +91,10 @@ xyplot(rossmann.ts,
 
 #sezonoWość tygodniowa i trend - brak trendu długoterminowego
 par(mfrow = c(2, 1))
-monthplot(rossmann.ts)
-boxplot(rossmann.ts ~ cycle(rossmann.ts))
+monthplot(rossmann.ts, labels = c("wtorek","środa","czwartek","piątek",
+                                  "sobota","niedziela","poniedziałek"))
+boxplot(names=c("wtorek","środa","czwartek","piątek","sobota","niedziela","poniedziałek")
+        , rossmann.ts ~ cycle(rossmann.ts))
 
 #wykresy rozrzutu dla wartości opóźionych - autokorelacja
 lag.plot(rossmann.ts, lags = 8, do.lines = FALSE)
@@ -155,13 +157,31 @@ xyplot(rossmann.ts.ma10,
 
 #dekompozycja addytywna
 rossmann.ts.dekomp.add <- decompose(rossmann.ts, type = "additive")
-plot(rossmann.ts.dekomp.add)
-tsdisplay(rossmann.ts.dekomp.add$random)
+rossmann.ts.dekomp.add$seasonal
+#plot(rossmann.ts.dekomp.add)
+decomp.plot.add <- function(x, main = NULL, ...) 
+{ 
+  if(is.null(main)) 
+    main <- paste("Dekompozycja addytywna szeregu czasowego") 
+  plot(
+    cbind(szereg_czasowy = x$random + if (x$type == "additive") 
+    x$trend + x$seasonal 
+    else x$trend * x$seasonal, trend = x$trend, sezonowość = x$seasonal, 
+    reszty = x$random), main = main, ...) 
+} 
+
+decomp.plot.add(rossmann.ts.dekomp.add)
+
+
+tsdisplay(rossmann.ts.dekomp.add$random, main = "Analiza reszt (dekompozycja addytywnna): funkcja ACF i PACF")
+
 xyplot(
   rossmann.ts.dekomp.add$random,
   strip = TRUE,
   cut = list(number = 5, overlap = 0.1)
 )
+
+
 # wychodzimy poza przedział ufności -> reszty nie przypominaj abialego szumu, za duzo
 # wartosci poza przedzialem ufnosci
 # widac tez sezonowosc
@@ -169,13 +189,32 @@ xyplot(
 #dekompozycja multiplikatywna
 rossmann.ts.dekomp.multi <-
   decompose(rossmann.ts, type = "multiplicative")
+
+
+decomp.plot.multi <- function(x, main = NULL, ...) 
+{ 
+  if(is.null(main)) 
+    main <- paste("Dekompozycja multiplikatywna szeregu czasowego") 
+  plot(
+    cbind(szereg_czasowy = x$random + if (x$type == "additive") 
+      x$trend + x$seasonal 
+      else x$trend * x$seasonal, trend = x$trend, sezonowość = x$seasonal, 
+      reszty = x$random), main = main, ...) 
+} 
+
+decomp.plot.multi(rossmann.ts.dekomp.multi)
+
+
 plot(rossmann.ts.dekomp.multi)
-tsdisplay(rossmann.ts.dekomp.multi$random)
+tsdisplay(rossmann.ts.dekomp.multi$random, main = "Analiza reszt (dekompozycja multiplikatywna): funkcja ACF i PACF")
 xyplot(
   rossmann.ts.dekomp.multi$random,
   strip = TRUE,
   cut = list(number = 5, overlap = 0.1)
 )
+
+
+
 # wychodzimy poza przedział ufności -> reszty nie przypominaj abialego szumu, za duzo
 # wartosci poza przedzialem ufnosci
 # widac tez sezonowosc
@@ -348,6 +387,8 @@ ETS.model1.pred <- forecast(ETS.model1, h = 30)
 # model TSLM
 TSLM.trend.season <- tslm(rossmann.ts.train ~ trend + season)
 TSLM.trend.season.pred <- forecast(TSLM.trend.season, h = 30)
+
+TSLM.trend.season$model
 
 #accuracy(TSLM.trend.season.pred$mean, rossmann.ts.test)
 #plot(rossmann.ts.test, lwd = 3, col = 'black')
