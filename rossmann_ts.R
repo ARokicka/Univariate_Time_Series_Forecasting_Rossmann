@@ -74,6 +74,17 @@ rossmann.ts <- ts(rossmann$Sales, start = 1, frequency = 7)
 rossmann.ts.train <- window(rossmann.ts, end =   c(131, 2))
 rossmann.ts.test  <- window(rossmann.ts, start = c(131, 3))
 
+x <- diffinv(rnorm(999))
+
+
+adf.test(rossmann.ts, k = 9, alternative = "stationary")
+# adf.test(x, k = 30, alternative = "stationary")
+
+kpss.test(rossmann.ts)
+# kpss.test(x)
+
+Box.test(rossmann.ts, lag = 9, type="Ljung-Box")
+
 #dobierz mi model do danych uczących
 rossmann.ts.fit <- auto.arima(rossmann.ts.train)
 # prognozuj dane na kolejne 30 dni
