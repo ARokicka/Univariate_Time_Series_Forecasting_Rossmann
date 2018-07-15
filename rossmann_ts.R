@@ -11,6 +11,10 @@ library(caret)
 library(gridExtra)
 library(grid)
 library(data.table)
+Sys.setenv(JAVA_HOME="C:\\Program Files\\Java\\jre-10.0.1")
+library(xlsx)
+
+
 
 #wczytywanie danych z pliku CSV test 
 rossmann.csv = read.csv("D:/OneDrive/Studia WNE/praca dyplomowa/dane/rossmann/rossmann.csv")
@@ -339,8 +343,88 @@ ARIMA.model4 <-
     seasonal = list(order = c(0, 1, 1), period = 14)
   )
 
-ARIMA.model4.pred = predict(ARIMA.model4, n.ahead = 30)
-tsdisplay(ARIMA.model4$residuals)
+
+# testowanie roznych P i Q pod kryterium AIC oraz BIC
+
+a <- array(numeric(),c(11,11,2)) 
+# a[1,1,1] <- 12
+# a[1,1,2] <- 3
+a
+
+
+max_aic = c(0,0,0)
+max_bic = c(0,0,0)
+
+
+for(i in 0:10){
+  for(k in 0:10){
+    print(paste("ARIMA", "p=", i,"q=",k))
+    ARIMA.model_tmp <-
+      Arima(
+        rossmann.ts.train,
+        order = c(i, 1, k),
+        seasonal = list(order = c(0, 1, 0), period = 7)
+      )
+    a[i+1,k+1, 1] <- ARIMA.model_tmp$aic
+    a[i+1,k+1, 2] <- ARIMA.model_tmp$bic
+    if(max_aic[1] < ARIMA.model_tmp$aic){
+      max_aic <- c(ARIMA.model_tmp$aic, i, k)
+    }
+    if(max_bic[1] < ARIMA.model_tmp$bic){
+      max_bic <- c(ARIMA.model_tmp$bic, i, k)
+    }
+  }
+}
+
+write.xlsx(a[,,1], "D:\\OneDrive\\Studia WNE\\praca dyplomowa\\dobor_modelu_arima\\arima_aic.xlsx")
+write.xlsx(a[,,1], "D:\\OneDrive\\Studia WNE\\praca dyplomowa\\dobor_modelu_arima\\arima_bic.xlsx")
+
+max_aic
+max_bic
+
+max_s_aic = c(0,0,0)
+max_s_bic = c(0,0,0)
+
+b <- array(numeric(),c(11,11,2)) 
+
+for(i in 0:10){
+  for(k in 0:10){
+    print(paste("SARIMA(0,1,0), SEASONAL: ", "p=", i,"q=",k))
+    ARIMA.model_tmp <-
+      Arima(
+        rossmann.ts.train,
+        order = c(0, 1, 0),
+        seasonal = list(order = c(i, 1, k), period = 7)
+      )
+    b[i+1,k+1, 1] <- ARIMA.model_tmp$aic
+    b[i+1,k+1, 2] <- ARIMA.model_tmp$bic
+    if(max_s_aic[1] < ARIMA.model_tmp$aic){
+      max_s_aic <- c(ARIMA.model_tmp$aic, i, k)
+    }
+    if(max_s_bic[1] < ARIMA.model_tmp$bic){
+      max_s_bic <- c(ARIMA.model_tmp$bic, i, k)
+    }
+  }
+}
+
+write.xlsx(b[,,1], "D:\\OneDrive\\Studia WNE\\praca dyplomowa\\dobor_modelu_arima\\sarima_aic.xlsx")
+write.xlsx(b[,,2], "D:\\OneDrive\\Studia WNE\\praca dyplomowa\\dobor_modelu_arima\\sarima_bic.xlsx")
+
+max_s_aic
+max_s_bic
+
+ARIMA.model5 <-
+  Arima(
+    rossmann.ts.train,
+    order = c(0, 1, 0),
+    seasonal = list(order = c(0, 1, 0), period = 7)
+  )
+
+ARIMA.model5.pred = predict(ARIMA.model5, n.ahead = 30)
+ARIMA.model5$aic
+ARIMA.model5$bic
+
+tsdisplay(ARIMA.model5.pred$pred)
 
 # TBATS
 TBATS.model1 <- tbats(
