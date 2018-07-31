@@ -432,17 +432,32 @@ TBATS.model1 <- tbats(
   use.box.cox = FALSE,
   use.trend = FALSE,
   use.damped.trend = TRUE,
-  seasonal.periods = c(14),
+  seasonal.periods = c(7),
   use.arma.errors = TRUE,
   trace = TRUE
 )
+
+TBATS.model1$alpha
+TBATS.model1$beta
+TBATS.model1$lambda
+
+
 TBATS.model1.pred <- forecast(TBATS.model1, h = 30)
 plot(TBATS.model1.pred)
 TBATS.model1.pred.forecast <-
   window(TBATS.model1.pred$mean, start = c(131, 3))
 plot(TBATS.model1.pred.forecast)
 
-SNAIVE.model <- snaive(rossmann.ts.train, h = 30)
+SNAIVE.model <- snaive(rossmann.ts.train, h = 7)
+
+plot(SNAIVE.model$mean)
+
+plot(SNAIVE.model$mean)
+plot(ts(last(rossmann.ts.train,n=7)))
+
+
+
+
 
 # Holt Winters
 HW.model1 <-
@@ -455,6 +470,8 @@ HW.model1 <-
   )
 HW.auto <-
   hw(rossmann.ts.train, h = 30, seasonal = "multiplicative")
+
+HW.auto$model
 
 #HW.model1$model
 #accuracy(HW.model1$mean, rossmann.ts.test)
@@ -483,7 +500,17 @@ ETS.model1.pred <- forecast(ETS.model1, h = 30)
 TSLM.trend.season <- tslm(rossmann.ts.train ~ trend + season)
 TSLM.trend.season.pred <- forecast(TSLM.trend.season, h = 30)
 
-TSLM.trend.season$model
+summary(TSLM.trend.season)$coefficients[,4] 
+
+coef.tslm <- summary(TSLM.trend.season)$coefficients
+
+write.xlsx(coef.tslm, "D:\\OneDrive\\Studia WNE\\praca dyplomowa\\coef_tslm.xlsx")
+
+
+TSLM.trend.season$coefficients
+str(summary(TSLM.trend.season))
+
+TSLM.trend.season$terms
 
 #accuracy(TSLM.trend.season.pred$mean, rossmann.ts.test)
 #plot(rossmann.ts.test, lwd = 3, col = 'black')
