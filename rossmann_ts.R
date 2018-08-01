@@ -468,6 +468,8 @@ HW.model1 <-
     alpha = 0.02,
     beta = 0.002
   )
+
+
 HW.auto <-
   hw(rossmann.ts.train, h = 30, seasonal = "multiplicative")
 
@@ -496,21 +498,79 @@ ETS.model1.pred <- forecast(ETS.model1, h = 30)
 #lines(ETS.auto.pred$mean, col = 'red')
 #lines(ETS.model1.pred$mean, col = 'green')
 
-# model TSLM
-TSLM.trend.season <- tslm(rossmann.ts.train ~ trend + season)
-TSLM.trend.season.pred <- forecast(TSLM.trend.season, h = 30)
+###################################################
+###################################################
+############# ZDEFINIOWANIE MODELI ################
+###################################################
+###################################################
 
-summary(TSLM.trend.season)$coefficients[,4] 
+###################################################
+#############       ARIMA          ################
+###################################################
 
-coef.tslm <- summary(TSLM.trend.season)$coefficients
+ARIMA.model_1 <-
+  Arima(
+    rossmann.ts.train,
+    order = c(0, 1, 0),
+    seasonal = list(order = c(0, 1, 0), period = 7)
+  )
 
-write.xlsx(coef.tslm, "D:\\OneDrive\\Studia WNE\\praca dyplomowa\\coef_tslm.xlsx")
+ARIMA.model_2 <-
+  Arima(
+    rossmann.ts.train,
+    order = c(4, 1, 0),
+    seasonal = list(order = c(2, 1, 0), period = 7)
+  )
+
+ARIMA.model_1.pred = predict(ARIMA.model_1, n.ahead = 30)
+ARIMA.model_2.pred = predict(ARIMA.model_2, n.ahead = 30)
+
+# plot(ARIMA.model_1.pred$pred)
+# plot(ARIMA.model_2.pred$pred)
 
 
-TSLM.trend.season$coefficients
-str(summary(TSLM.trend.season))
+###################################################
+#############        TSLM          ################
+###################################################
 
-TSLM.trend.season$terms
+TSLM.model_1 <- tslm(rossmann.ts.train ~ trend + season)
+# write.xlsx(coef.tslm, "D:\\OneDrive\\Studia WNE\\praca dyplomowa\\coef_tslm.xlsx")
+TSLM.model_1$coefficients[2] <- 0
+TSLM.model_1$coefficients[5] <- 0
+TSLM.model_1.pred <- forecast(TSLM.model_1, h = 30)
+
+str(summary(TSLM.model_1))
+summary(TSLM.model_1)$coefficients[,4] 
+summary(TSLM.model_1)$coefficients
+# plot(TSLM.model_1.pred$mean)
+
+###################################################
+#############         H-W          ################
+###################################################
+
+HW.model_1 <- hw(rossmann.ts.train, h = 30, seasonal = "multiplicative")
+# plot(HW.model_1$mean)
+
+###################################################
+#############        SNAIVE        ################
+###################################################
+
+SNAIVE.model_1 <- snaive(rossmann.ts.train, h = 7)
+# plot(SNAIVE.model$mean)
+
+###################################################
+###################################################
+###################################################
+###################################################
+###################################################
+
+
+###################################################
+###################################################
+#############     OCENA MODELI     ################
+###################################################
+###################################################
+
 
 #accuracy(TSLM.trend.season.pred$mean, rossmann.ts.test)
 #plot(rossmann.ts.test, lwd = 3, col = 'black')
