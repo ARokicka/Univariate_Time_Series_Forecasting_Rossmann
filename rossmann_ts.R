@@ -555,7 +555,7 @@ HW.model_1 <- hw(rossmann.ts.train, h = 30, seasonal = "multiplicative")
 #############        SNAIVE        ################
 ###################################################
 
-SNAIVE.model_1 <- snaive(rossmann.ts.train, h = 7)
+SNAIVE.model_1 <- snaive(rossmann.ts.train, h = 30)
 # plot(SNAIVE.model$mean)
 
 ###################################################
@@ -629,7 +629,6 @@ plot(rossmann.ts.test,
      lwd = 3,
      col = 'black',
      main = 'Prognozy dla danych testowych',
-     # ylim=c(min(ARIMA.model_1.pred$pred),max(ARIMA.model_1.pred$pred)) 
      ylim=c(0,25000000)
      )
 lines(ARIMA.model_1.pred$pred, col = 'chocolate4')
@@ -658,6 +657,47 @@ legend(
   ),
   lty = c(1, 1, 1, 1, 1, 1)
 )
+
+
+
+
+###################################################
+####    Graficzna analiza błędów  prognoz    ######
+###################################################
+
+plot(rossmann.ts.test,
+     lwd = 3,
+     col = 'black',
+     main = 'Błędy prognoz dla danych testowych',
+     ylim=c(0,15000000)
+)
+lines(abs(rossmann.ts.test - ARIMA.model_1.pred$pred), col = 'chocolate4')
+lines(abs(rossmann.ts.test - ARIMA.model_2.pred$pred), col = 'brown3')
+lines(abs(rossmann.ts.test - TSLM.model_1.pred$mean), col = 'forestgreen')
+lines(abs(rossmann.ts.test - HW.model_1$mean), col = 'darkturquoise')
+lines(abs(rossmann.ts.test - SNAIVE.model_1$mean), col = 'darkorange')
+grid()
+legend(
+  "bottomright",
+  legend = c(
+    "Oryginalny szereg",
+    "ARIMA(0,1,0)",
+    "ARIMA(4,1,0)",
+    "TSLM",
+    "Holta-Wintersa",
+    "Naiwny"
+  ),
+  col = c(
+    "black",
+    "chocolate4",
+    "brown3",
+    "forestgreen",
+    'darkturquoise',
+    "darkorange"
+  ),
+  lty = c(1, 1, 1, 1, 1, 1)
+)
+
 
 
 
