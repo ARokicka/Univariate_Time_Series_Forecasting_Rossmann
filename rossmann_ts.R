@@ -539,9 +539,9 @@ TSLM.model_1$coefficients[2] <- 0
 TSLM.model_1$coefficients[5] <- 0
 TSLM.model_1.pred <- forecast(TSLM.model_1, h = 30)
 
-str(summary(TSLM.model_1))
-summary(TSLM.model_1)$coefficients[,4] 
-summary(TSLM.model_1)$coefficients
+# str(summary(TSLM.model_1))
+# summary(TSLM.model_1)$coefficients[,4] 
+# summary(TSLM.model_1)$coefficients
 # plot(TSLM.model_1.pred$mean)
 
 ###################################################
@@ -581,29 +581,45 @@ SNAIVE.model_1 <- snaive(rossmann.ts.train, h = 7)
 # nie widac na nich trendów i sezonowości
 # ale w resztach widac pewne niewyjaśnione zalezności
 
-par(mfrow = c(5, 2))
-plot(ARIMA.model1$residuals, main = "Reszty dla modelu ARIMA(28,1,0)(0,1,0)")
-Acf(ARIMA.model1$residuals, main = "ACF: Reszty dla modelu ARIMA(29,1,0)(0,1,0)")
-plot(ARIMA.model2$residuals, main = "Reszty dla modelu ARIMA(0,1,27)(0,1,0)")
-Acf(ARIMA.model1$residuals, main = "ACF: Reszty dla modelu ARIMA(29,1,0)(0,1,0)")
-plot(ARIMA.model3$residuals, main = "Reszty dla modelu auto.arima")
-Acf(ARIMA.model3$residuals, main = "ACF: Reszty dla modelu auto.arima")
-plot(ARIMA.model4$residuals, main = "Reszty dla modelu ARIMA(8,1,8)(0,1,1)")
-Acf(ARIMA.model4$residuals, main = "ACF: Reszty dla modelu ARIMA(8,1,8)(0,1,1)")
-plot(TBATS.model1.pred$residuals, main = "Reszty dla modelu TBATS")
-Acf(TBATS.model1.pred$residuals, main = "ACF: Reszty dla modelu TBATS")
+###################################################
+###########        ACF i reszty    ################
+###################################################
 
 par(mfrow = c(5, 2))
-plot(ETS.auto.pred$residuals, main = "Reszty dla modelu ETS.auto")
-Acf(ETS.auto.pred$residuals, main = "ACF: Reszty dla modelu ETS.auto")
-plot(TSLM.trend.season$residuals, main = "Reszty dla modelu TSLM")
-Acf(TSLM.trend.season$residuals, main = "ACF: Reszty dla modelu TSLM")
-plot(SNAIVE.model$residuals, main = "Reszty dla modelu naive")
-Acf(SNAIVE.model$residuals, main = "ACF: Reszty dla modelu naive")
-plot(HW.auto$residuals, main = "Reszty dla modelu Holt-Winters-auto")
-Acf(HW.auto$residuals, main = "ACF: Reszty dla modelu Holt-Winters-auto")
-plot(HW.model1$residuals, main = "Reszty dla modelu Holt-Winters-adj")
-Acf(HW.model1$residuals, main = "ACF: Reszty dla modelu Holt-Winters-adj")
+
+plot(ARIMA.model_1$residuals, main = "Reszty dla modelu ARIMA(0,1,0)(0,1,0)")
+Acf(ARIMA.model_1$residuals, main = "ACF: Reszty dla modelu ARIMA(0,1,0)(0,1,0)")
+
+plot(ARIMA.model_2$residuals, main = "Reszty dla modelu ARIMA(4,1,0)(2,1,0)")
+Acf(ARIMA.model_2$residuals, main = "ACF: Reszty dla modelu ARIMA(4,1,0)(2,1,0)")
+
+plot(TSLM.model_1$residuals, main = "Reszty dla modelu TSLM")
+Acf(TSLM.model_1$residuals, main = "ACF: Reszty dla modelu TSLM")
+
+plot(HW.model_1$residuals, main = "Reszty dla modelu Holta-Wintersa")
+Acf(HW.model_1$residuals, main = "ACF: Reszty dla modelu Holta-Wintersa")
+
+plot(SNAIVE.model_1$residuals, main = "Reszty dla modelu naiwnego")
+Acf(SNAIVE.model_1$residuals, main = "ACF: Reszty dla modelu naiwnego")
+
+###################################################
+######  Ljung-Box - autokorlelacja reszt  #########
+###################################################
+
+Box.test(ARIMA.model1$residuals, lag = 1, type = "Ljung-Box")
+Box.test(ARIMA.model1$residuals, lag = 7, type = "Ljung-Box")
+
+Box.test(ARIMA.model2$residuals, lag = 1, type = "Ljung-Box")
+Box.test(ARIMA.model2$residuals, lag = 7, type = "Ljung-Box")
+
+Box.test(ARIMA.model3$residuals, lag = 1, type = "Ljung-Box")
+Box.test(ARIMA.model3$residuals, lag = 7, type = "Ljung-Box")
+
+Box.test(ARIMA.model4$residuals, lag = 1, type = "Ljung-Box")
+Box.test(ARIMA.model4$residuals, lag = 7, type = "Ljung-Box")
+
+Box.test(TBATS.model1.pred$residuals, lag = 1, type = "Ljung-Box")
+Box.test(TBATS.model1.pred$residuals, lag = 7, type = "Ljung-Box")
 
 
 
