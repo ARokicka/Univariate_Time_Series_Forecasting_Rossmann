@@ -15,6 +15,12 @@ Sys.setenv(JAVA_HOME="C:\\Program Files\\Java\\jre-10.0.1")
 library(xlsx)
 
 
+###################################################
+###################################################
+##########     WCZYTYWANIE DANYCH    ##############
+###################################################
+###################################################
+
 
 #wczytywanie danych z pliku CSV test 
 rossmann.csv = read.csv("D:/OneDrive/Studia WNE/praca dyplomowa/dane/rossmann/rossmann.csv")
@@ -77,6 +83,17 @@ rossmann.ts <- ts(rossmann$Sales, start = 1, frequency = 7)
 #podział na dane testowe i uczące
 rossmann.ts.train <- window(rossmann.ts, end =   c(131, 2))
 rossmann.ts.test  <- window(rossmann.ts, start = c(131, 3))
+
+
+
+
+###################################################
+###################################################
+########## KONIEC WCZYTYWANIA DANYCH ##############
+###################################################
+###################################################
+
+
 
 x <- diffinv(rnorm(999))
 
@@ -640,11 +657,11 @@ grid()
 legend(
   "bottomright",
   legend = c(
-    "Oryginalny szereg",
+    "Oryginalny",
     "ARIMA(0,1,0)",
     "ARIMA(4,1,0)",
     "TSLM",
-    "Holta-Wintersa",
+    "H.-W.",
     "Naiwny"
   ),
   col = c(
@@ -657,8 +674,6 @@ legend(
   ),
   lty = c(1, 1, 1, 1, 1, 1)
 )
-
-
 
 
 ###################################################
@@ -680,11 +695,11 @@ grid()
 legend(
   "bottomright",
   legend = c(
-    "Oryginalny szereg",
+    "Oryginalny",
     "ARIMA(0,1,0)",
     "ARIMA(4,1,0)",
     "TSLM",
-    "Holta-Wintersa",
+    "H.-W.",
     "Naiwny"
   ),
   col = c(
@@ -697,6 +712,223 @@ legend(
   ),
   lty = c(1, 1, 1, 1, 1, 1)
 )
+
+###################################################
+####          analiza błędów  prognoz        ######
+###################################################
+
+ARIMA.model_1.pred.postResample <-
+  accuracy(ARIMA.model_1.pred$pred, rossmann.ts.test)
+
+ARIMA.model_2.pred.postResample <-
+  accuracy(ARIMA.model_2.pred$pred, rossmann.ts.test)
+
+TSLM.model_1.pred.postResample <-
+  accuracy(TSLM.model_1.pred$mean, rossmann.ts.test)
+
+HW.model_1.postResample <-
+  accuracy(HW.model_1$mean, rossmann.ts.test)
+
+SNAIVE.model_1.postResample <-
+  accuracy(SNAIVE.model_1$mean, rossmann.ts.test)
+
+
+# diagram porównujący RMSE różnych modeli
+compare.RMSE <-
+  c(
+    ARIMA.model_1.pred.postResample[2],
+    ARIMA.model_2.pred.postResample[2],
+    TSLM.model_1.pred.postResample[2],
+    HW.model_1.postResample[2],
+    SNAIVE.model_1.postResample[2]
+  )
+names(compare.RMSE) <- c(
+  "ARIMA(0,1,0)",
+  "ARIMA(4,1,0)",
+  "TSLM",
+  "Holta-Wintersa",
+  "Naiwny"
+)
+
+barplot(compare.RMSE, col = rainbow(5), main = "Błąd: kryterium RMSE")
+legend(
+  "topright",
+  c(
+    "ARIMA(0,1,0)",
+    "ARIMA(4,1,0)",
+    "TSLM",
+    "Holta-Wintersa",
+    "Naiwny"
+  ),
+  #cex = 1.3,
+  bty = "n",
+  fill = rainbow(5)
+)
+
+
+# diagram porównujący MAPE różnych modeli
+compare.MAPE <-
+  c(
+    ARIMA.model_1.pred.postResample[5],
+    ARIMA.model_2.pred.postResample[5],
+    TSLM.model_1.pred.postResample[5],
+    HW.model_1.postResample[5],
+    SNAIVE.model_1.postResample[5]
+  )
+names(compare.MAPE) <- c(
+  "ARIMA(0,1,0)",
+  "ARIMA(4,1,0)",
+  "TSLM",
+  "Holta-Wintersa",
+  "Naiwny"
+)
+
+barplot(compare.MAPE, col = rainbow(5), main = "Błąd: kryterium MAPE")
+legend(
+  "topright",
+  c(
+    "ARIMA(0,1,0)",
+    "ARIMA(4,1,0)",
+    "TSLM",
+    "Holta-Wintersa",
+    "Naiwny"
+  ),
+  cex = 1.3,
+  bty = "n",
+  fill = rainbow(5)
+)
+
+# diagram porównujący MAE różnych modeli
+compare.MAE <-
+  c(
+    ARIMA.model_1.pred.postResample[3],
+    ARIMA.model_2.pred.postResample[3],
+    TSLM.model_1.pred.postResample[3],
+    HW.model_1.postResample[3],
+    SNAIVE.model_1.postResample[3]
+  )
+names(compare.MAE) <- c(
+  "ARIMA(0,1,0)",
+  "ARIMA(4,1,0)",
+  "TSLM",
+  "Holta-Wintersa",
+  "Naiwny"
+)
+
+barplot(compare.MAE, col = rainbow(5), main = "Błąd: kryterium MAE")
+legend(
+  "topright",
+  c(
+    "ARIMA(0,1,0)",
+    "ARIMA(4,1,0)",
+    "TSLM",
+    "Holta-Wintersa",
+    "Naiwny"
+  ),
+  cex = 1.3,
+  bty = "n",
+  fill = rainbow(5)
+)
+
+
+# diagram porównujący MPE różnych modeli
+compare.Theil <-
+  c(
+    ARIMA.model_1.pred.postResample[7],
+    ARIMA.model_2.pred.postResample[7],
+    TSLM.model_1.pred.postResample[7],
+    HW.model_1.postResample[7],
+    SNAIVE.model_1.postResample[7]
+  )
+names(compare.Theil) <- c(
+  "ARIMA(0,1,0)",
+  "ARIMA(4,1,0)",
+  "TSLM",
+  "Holta-Wintersa",
+  "Naiwny"
+)
+
+barplot(compare.Theil, col = rainbow(5), main = "Błąd: kryterium Theila")
+legend(
+  "topright",
+  c(
+    "ARIMA(0,1,0)",
+    "ARIMA(4,1,0)",
+    "TSLM",
+    "Holta-Wintersa",
+    "Naiwny"
+  ),
+  cex = 1.3,
+  bty = "n",
+  fill = rainbow(5)
+)
+
+# tabelka porównująca błędy
+rossmann.ts.test.compare <-
+  data.table(
+    RMSE = c(
+      prettyNum(format(round(ARIMA.model_1.pred.postResample[2], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ARIMA.model_2.pred.postResample[2], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(TSLM.model_1.pred.postResample[2], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(HW.model_1.postResample[2], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(SNAIVE.model_1.postResample[2], 2), nsmall = 2),big.mark=" ",scientific=FALSE)
+    ),
+    
+    MAE = c(
+      prettyNum(format(round(ARIMA.model_1.pred.postResample[3], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ARIMA.model_2.pred.postResample[3], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(TSLM.model_1.pred.postResample[3], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(HW.model_1.postResample[3], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(SNAIVE.model_1.postResample[3], 2), nsmall = 2),big.mark=" ",scientific=FALSE)
+    ),
+    MAPE = c(
+      paste(prettyNum(format(round(ARIMA.model_1.pred.postResample[5], 2), nsmall = 2),big.mark=" ",scientific=FALSE),"%"),
+      paste(prettyNum(format(round(ARIMA.model_2.pred.postResample[5], 2), nsmall = 2),big.mark=" ",scientific=FALSE),"%"),
+      paste(prettyNum(format(round(TSLM.model_1.pred.postResample[5], 2), nsmall = 2),big.mark=" ",scientific=FALSE),"%"),
+      paste(prettyNum(format(round(HW.model_1.postResample[5], 2), nsmall = 2),big.mark=" ",scientific=FALSE),"%"),
+      paste(prettyNum(format(round(SNAIVE.model_1.postResample[5], 2), nsmall = 2),big.mark=" ",scientific=FALSE),"%")
+    ),
+    ACF1 = c(
+      prettyNum(format(round(ARIMA.model_1.pred.postResample[6], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ARIMA.model_2.pred.postResample[6], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(TSLM.model_1.pred.postResample[6], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(HW.model_1.postResample[6], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(SNAIVE.model_1.postResample[6], 2), nsmall = 2),big.mark=" ",scientific=FALSE)
+    ),
+    Theil = c(
+      prettyNum(format(round(ARIMA.model_1.pred.postResample[7], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(ARIMA.model_2.pred.postResample[7], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(TSLM.model_1.pred.postResample[7], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(HW.model_1.postResample[7], 2), nsmall = 2),big.mark=" ",scientific=FALSE),
+      prettyNum(format(round(SNAIVE.model_1.postResample[7], 2), nsmall = 2),big.mark=" ",scientific=FALSE)
+    )
+  )
+
+
+myt <- ttheme_default(core = list(fg_params = list(hjust = 1, x = 1)))
+
+grid.table(
+  rossmann.ts.test.compare,
+  theme = myt,
+  rows = c(
+    "ARIMA(0,1,0)",
+    "ARIMA(4,1,0)",
+    "TSLM",
+    "Holta-Wintersa",
+    "Naiwny"
+  )
+)
+
+
+
+
+
+
+###################################################
+###################################################
+###################################################
+###################################################
+###################################################
 
 
 
