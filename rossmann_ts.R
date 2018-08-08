@@ -430,18 +430,33 @@ write.xlsx(b[,,2], "D:\\OneDrive\\Studia WNE\\praca dyplomowa\\dobor_modelu_arim
 
 for(i in 0:10){
   for(k in 0:10){
-    tic()
-    ARIMA.model_tmp <-
-      Arima(
-        rossmann.ts.train,
-        order = c(9, 1, 10),
-        method="ML",
-        seasonal = list(order = c(i, 1, k), period = 7)
-      )
-    b[i+1,k+1, 1] <- ARIMA.model_tmp$aic
-    print(paste("SARIMA(9,1,10), SEASONAL: ", "p=", i,"q=",k))
-    toc()
-    print('\n')
+    try(
+      tic()
+    )
+    try(
+      ARIMA.model_tmp <-
+        Arima(
+          rossmann.ts.train,
+          order = c(9, 1, 10),
+          method="ML",
+          seasonal = list(order = c(i, 1, k), period = 7)
+        )
+    )
+    try(
+      b[i+1,k+1, 1] <- ARIMA.model_tmp$aic
+    )
+    try(
+      print(paste("SARIMA(9,1,10), SEASONAL: ", "p=", i,"q=",k))
+    )
+    try(
+      toc()
+    )    
+    try(
+      print(paste("AIC: ", ARIMA.model_tmp$aic))
+    )
+    try(
+      cat('\n')
+    )   
   }
 }
 
